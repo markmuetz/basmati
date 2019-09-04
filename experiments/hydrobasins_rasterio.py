@@ -7,9 +7,11 @@ import geopandas as gpd
 import rasterio
 import rasterio.features
 
+HYDROBASINS_DIR = '/home/markmuetz/mirrors/jasmin/cosmic/mmuetz/HydroBASINS/as'
+
 
 def display_raster_level1():
-    gdf = gpd.read_file('/home/markmuetz/mirrors/jasmin/cosmic/mmuetz/HydroBASINS/hybas_as_lev01_v1c.shp')
+    gdf = gpd.read_file(f'{HYDROBASINS_DIR}/hybas_as_lev01_v1c.shp')
     raster = build_raster(gdf.geometry)
     plot_raster(raster)
 
@@ -64,7 +66,7 @@ def plot_raster(raster):
     plt.show()
     
 def display_raster_level2():
-    gdf = gpd.read_file('/home/markmuetz/mirrors/jasmin/cosmic/mmuetz/HydroBASINS/hybas_as_lev02_v1c.shp')
+    gdf = gpd.read_file(f'{HYDROBASINS_DIR}/hybas_as_lev02_v1c.shp')
 
     raster = build_raster(gdf.geometry)
     plot_raster(raster)

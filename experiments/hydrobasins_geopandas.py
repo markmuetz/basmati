@@ -4,6 +4,8 @@ import matplotlib.pyplot as plt
 import geopandas as gpd
 import cartopy.crs as ccrs
 
+HYDROBASINS_DIR = '/home/markmuetz/mirrors/jasmin/cosmic/mmuetz/HydroBASINS/as'
+
 
 def find_downstream(gdf, start_row):
     next_row = start_row
@@ -49,7 +51,7 @@ def find_upstream(gdf, start_row):
 #             print(next_gdf)
 
 if __name__ == '__main__':
-    gdf = gpd.read_file('/home/markmuetz/mirrors/jasmin/cosmic/mmuetz/HydroBASINS/hybas_as_lev08_v1c.shp')
+    gdf = gpd.read_file(f'{HYDROBASINS_DIR}/hybas_as_lev08_v1c.shp')
     id_dist_max = gdf['DIST_MAIN'].idxmax()
     furthest = gdf.iloc[id_dist_max]
 
