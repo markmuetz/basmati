@@ -1,0 +1,3 @@
+
+class BasmatiError(Exception):
+    pass
