@@ -14,11 +14,23 @@ from coarse_grain2d import coarse_grain2d
 
 HYDROSHEDS_DIR = '/home/markmuetz/mirrors/jasmin/cosmic/mmuetz/HydroSHEDS'
 
-def plot_2d(ma_dem):
-    print(as_dem.bounds)
+def load_dem30s():
+    with rasterio.open(Path(HYDROSHEDS_DIR, 'as_dem_30s.bil')) as as_dem:
+    # as_dem = rasterio.open(Path(HYDROSHEDS_DIR, 'as_dem_30s.bil'))
+        # N.B. in different order to rasterio tx!
+        gdal_tx = np.array(as_dem.get_transform())
+        affine_tx = rasterio.transform.Affine(gdal_tx[1], gdal_tx[2], gdal_tx[0], 
+                                              gdal_tx[4], gdal_tx[5], gdal_tx[3]) 
+        # print(as_dem.bounds)
+        # print(gdal_tx.reshape(2, 3))
+        dem = as_dem.read()[0]
+        ma_dem = np.ma.masked_array(dem, ~as_dem.dataset_mask())
+    return dem, ma_dem, affine_tx
 
+def plot_2d(ma_dem, title):
+    plt.figure()
     ax = plt.axes(projection=ccrs.PlateCarree())
-    plt.title('DEM Asia at 30 s resolution (1 / 120 deg)')
+    plt.title(title)
     ax.coastlines()
     ax.imshow(ma_dem[::-1, :], extent=(55, 180, -10, 60), origin='lower')
     plt.show()
@@ -39,9 +51,11 @@ def plot_3d(dem):
     plt.show()
 
 if __name__ == '__main__':
-    with rasterio.open(Path(HYDROSHEDS_DIR, 'as_dem_30s.bil')) as as_dem:
-        dem = as_dem.read()[0]
-        ma_dem = np.ma.masked_array(dem, ~as_dem.dataset_mask())
+    dem, ma_dem, affine_tx = load_dem30s()
 
-    plot_2d(ma_dem)
+    dem_coarse = coarse_grain2d(dem, (10, 10))
+    dem_coarse[dem_coarse < 0] = 0
+
+    plot_2d(ma_dem, 'DEM Asia at 30 s resolution (1 / 120 deg)')
+    plot_2d(dem_coarse, 'DEM Asia at 5 min resolution (1 / 12 deg)')
     plot_3d(dem)
