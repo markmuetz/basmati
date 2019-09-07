@@ -35,12 +35,6 @@ def main(argv, import_log_msg=''):
     colour = not args.bw_logs
     warn_stderr = False
     logger = setup_logger(debug, colour, warn_stderr)
-    logger.debug(f'start dir: {Path.cwd()}')
-
-    logger.debug(f'basmati import: {import_log_msg}')
-    logger.debug(' '.join(argv))
-    logger.debug(args)
-    logger.debug(args.cmd_name)
 
     project_dir = BasmatiProject.basmati_project_dir(Path.cwd())
     if project_dir:
@@ -50,6 +44,12 @@ def main(argv, import_log_msg=''):
             logger.error('Not in a basmati project')
             return
         project = None
+
+    logger.debug(f'start dir: {Path.cwd()}')
+    logger.debug(f'basmati import: {import_log_msg}')
+    logger.debug(' '.join(argv))
+    logger.debug(args)
+    logger.debug(args.cmd_name)
 
     cmd_ctx = CmdContext(project)
     if not args.throw_exceptions:

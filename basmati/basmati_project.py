@@ -6,12 +6,13 @@ from logging import getLogger
 
 import basmati
 from basmati.basmati_errors import BasmatiError
+from basmati.setup_logging import add_file_logging
 
 logger = getLogger('basmati.bm_project')
 
 
 class BasmatiProject:
-    dotbasmati_dir = '.basmati'
+    dotbasmati_dir = Path('.basmati')
 
     @staticmethod
     def basmati_project_dir(path):
@@ -52,13 +53,13 @@ class BasmatiProject:
         (project_dir / 'figs').mkdir()
         logger.info(f'Created and initalized {project_dir}')
 
-
     def __init__(self, cwd=Path.cwd(), project_dir=Path.cwd()):
         assert BasmatiProject._is_project_root_dir(project_dir)
         self.project_dir = project_dir
         self.cwd = cwd
         self.config = None
-        self.logging_filename = ''
+        self.logging_filename = Path(self.project_dir / self.dotbasmati_dir / 'basmati.log')
+        add_file_logging(self.logging_filename)
 
         self._load_config()
 

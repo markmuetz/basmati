@@ -4,44 +4,6 @@ import sys
 from basmati.bcolors import bcolors
 
 
-# class BraceMessage:
-#     def __init__(self, msg, *args, **kwargs):
-#         self.msg = str(msg)
-#         self.args = args
-#         self.kwargs = kwargs
-# 
-#     def __str__(self):
-#         return self.msg.format(*self.args, **self.kwargs)
-# 
-# 
-# class BraceFormatter(logging.Formatter):
-#     """Allow deferred formatting of msg using {msg} syntax"""
-#     def format(self, record):
-#         # record.msg is whatever was passed into e.g. logger.debug(...).
-#         # record.args is:
-#         #     extra args, or:
-#         # kwargs dict:.
-#         record_args_orig = record.args
-#         record_msg_orig = record.msg
-#         # replace record.msg with a BraceMessage and set record.args to ()
-#         if isinstance(record.args, dict):
-#             args = (record.args,)
-#         else:
-#             args = record.args
-#         kwargs = {}
-#         record.args = ()
-#         # N.B. msg has not been formatted yet. It will get formatted when
-#         # str(...) gets called on the BraceMessage.
-#         record.msg = BraceMessage(record.msg, *args, **kwargs)
-#         result = logging.Formatter.format(self, record)
-# 
-#         # Leave everything as we found it.
-#         record.args = record_args_orig
-#         record.msg = record_msg_orig
-# 
-#         return result
-# 
-
 # Thanks: # http://stackoverflow.com/a/8349076/54557
 class ColourConsoleFormatter(logging.Formatter):
     '''Format messages in colour based on their level'''
@@ -71,12 +33,30 @@ class ColourConsoleFormatter(logging.Formatter):
         if hasattr(self, '_style'):
             self._style._fmt = self._fmt
  
-        # Call the BraceFormatter formatter class to do the grunt work
+        # Call the base formatter class to do the grunt work
         result = logging.Formatter.format(self, record)
  
         return result
  
  
+def add_file_logging(logging_filename, root=True):
+    root_logger = logging.getLogger()
+
+    if root and getattr(root_logger, 'has_file_logging', False):
+        # Stops log being setup for a 2nd time during ipython reload(...)
+        root_logger.debug('Root logger already has file logging')
+    else:
+        root_logger.debug(f'Adding file handler {logging_filename}')
+        file_formatter = logging.Formatter('%(asctime)s:%(name)-20s:%(levelname)-8s: %(message)s')
+        fileHandler = logging.FileHandler(logging_filename, mode='a')
+        fileHandler.setFormatter(file_formatter)
+        fileHandler.setLevel(logging.DEBUG)
+
+        root_logger.addHandler(fileHandler)
+        if root:
+            root_logger.has_file_logging = True
+
+
 def setup_logger(debug=False, colour=True, warn_stderr=False):
     '''Gets a logger. Sets up root logger ('basmati') if nec.'''
     root_logger = logging.getLogger()
@@ -94,12 +74,9 @@ def setup_logger(debug=False, colour=True, warn_stderr=False):
         basmati_logger.debug('Root logger already setup')
     else:
         fmt = '%(levelname)-8s: %(message)s'
-        # fmt = '{levelname:8s}: {message}'
         if colour:
             console_formatter = ColourConsoleFormatter(fmt)
-            # console_formatter = logging.Formatter(fmt)
         else:
-            # console_formatter = BraceFormatter(fmt, style='{')
             console_formatter = logging.Formatter(fmt)
 
         if debug:
