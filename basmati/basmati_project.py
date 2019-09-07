@@ -75,4 +75,4 @@ class BasmatiProject:
             self.config.read_file(f)
         logger.debug('loaded suite config')
 
-        self.hydrosheds_dir = Path(self.config['settings']['hydrosheds_dir'])
+        self.hydrosheds_dir = Path(os.path.expandvars(self.config['settings']['hydrosheds_dir']))
