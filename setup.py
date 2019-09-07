@@ -27,6 +27,8 @@ setup(
     packages=[
         'basmati',
         'basmati.cmds',
+        'basmati.examples',
+        'basmati.examples.example_project',
         ],
     scripts=[
         'bin/basmati',
@@ -45,8 +47,7 @@ setup(
     extras_require={
         # 'display': ['matplotlib'],
     },
-    # package_data={'basmati.data': ['files/vn10.5/STASHmaster*'],
-    #     },
+    package_data={'basmati.examples.example_project': ['schiemann2018mean_supplementary_tableS1.csv']},
     url='https://github.com/markmuetz/basmati',
     classifiers=[
         'Environment :: Console',

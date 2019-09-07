@@ -8,8 +8,8 @@ from .setup_logging import setup_logger
 from .basmati_cmd import main as basmati_main
 from .basmati_project import BasmatiProject
 from .basmati_errors import BasmatiError
-from .hydrosheds import load_hydrobasins_geodataframe, load_hydrosheds_dem
-from .utils import build_raster_from_geometries, coarse_grain2d
+# Time consuming. Leave as: from basmati import hydrosheds
+# from .hydrosheds import load_hydrobasins_geodataframe, load_hydrosheds_dem
 
 __version__ = VERSION
 

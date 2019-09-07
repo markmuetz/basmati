@@ -7,8 +7,9 @@ from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
 from matplotlib.ticker import LinearLocator, FormatStrFormatter
 
-import basmati as bm
+from basmati import BasmatiProject
 from basmati.utils import coarse_grain2d
+from basmati.hydrosheds import load_hydrosheds_dem
 
 
 def plot_2d(ma_dem, title, filename, extent):
@@ -35,8 +36,8 @@ def plot_3d(dem):
     plt.show()
 
 if __name__ == '__main__':
-    project = bm.BasmatiProject()
-    bounds, tx, dem, mask = bm.load_hydrosheds_dem(project.hydrosheds_dir, 'as')
+    project = BasmatiProject()
+    bounds, tx, dem, mask = load_hydrosheds_dem(project.hydrosheds_dir, 'as')
     extent = (bounds.left, bounds.right, bounds.bottom, bounds.top)
 
     ma_dem = np.ma.masked_array(dem, mask)
@@ -45,6 +46,7 @@ if __name__ == '__main__':
     ma_dem_coarse = np.ma.masked_array(dem_coarse, dem_coarse < -1000)
 
     plot_2d(ma_dem, 'DEM Asia at 30 s resolution (1 / 120 deg)', 'dem_asia_30s.png', extent)
-    plot_2d(ma_dem_coarse, 'DEM Asia at 5 min resolution (1 / 12 deg)', 'dem_asia_5min.png', extent)
+    plot_2d(ma_dem_coarse, 
+            'DEM Asia at 5 min resolution (1 / 12 deg)', 'dem_asia_5min.png', extent)
 
     # plot_3d(dem)
