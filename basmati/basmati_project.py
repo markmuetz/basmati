@@ -1,3 +1,5 @@
+import os
+import shutil
 from pathlib import Path
 from configparser import ConfigParser
 from logging import getLogger
@@ -32,6 +34,24 @@ class BasmatiProject:
             (project_dir / BasmatiProject.dotbasmati_dir).mkdir()
         except FileExistsError:
             raise BasmatiError('Project already initialized')
+
+    @staticmethod
+    def init_example_project(project_dir):
+        basmati_home = Path(os.path.realpath(__file__)).parent
+        example_project_dir = basmati_home / 'examples/example_project'
+        assert example_project_dir.exists(), f'{example_project_dir} does not exist'
+        logger.debug(f'cp files from {example_project_dir} to {project_dir}')
+
+        filenames = list(example_project_dir.glob('*.py'))
+        filenames.extend(list(example_project_dir.glob('*.csv')))
+        filenames.extend(list(example_project_dir.glob('*.conf')))
+        filenames.append(example_project_dir / 'Makefile')
+        for filename in filenames:
+            logger.debug(f'cp {filename} to {project_dir}')
+            shutil.copy(filename, project_dir)
+        (project_dir / 'figs').mkdir()
+        logger.info(f'Created and initalized {project_dir}')
+
 
     def __init__(self, cwd=Path.cwd(), project_dir=Path.cwd()):
         assert BasmatiProject._is_project_root_dir(project_dir)
