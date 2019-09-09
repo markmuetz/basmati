@@ -61,9 +61,9 @@ class BasmatiProject:
         self.cwd = cwd
         self.config = None
 
-        debug |= os.getenv('$BASMATI_DEBUG', 'false').lower() == 'true'
-        colour |= os.getenv('$BASMATI_COLOUR', 'false').lower() == 'true'
-        warn_stderr |= os.getenv('$BASMATI_WARN_STDERR', 'false').lower() == 'true'
+        debug |= os.getenv('BASMATI_DEBUG', 'false').lower() == 'true'
+        colour &= os.getenv('BASMATI_COLOUR', 'true').lower() == 'true'
+        warn_stderr |= os.getenv('BASMATI_WARN_STDERR', 'false').lower() == 'true'
 
         self.logger = setup_logger(debug, colour, warn_stderr)
         self.logging_filename = Path(self.project_dir / self.dotbasmati_dir / 'basmati.log')

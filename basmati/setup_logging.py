@@ -40,21 +40,21 @@ class ColourConsoleFormatter(logging.Formatter):
  
  
 def add_file_logging(logging_filename, root=True):
-    root_logger = logging.getLogger()
+    basmati_logger = logging.getLogger('basmati')
 
-    if root and getattr(root_logger, 'has_file_logging', False):
+    if getattr(basmati_logger, 'has_file_logging', False):
         # Stops log being setup for a 2nd time during ipython reload(...)
-        root_logger.debug('Root logger already has file logging')
+        basmati_logger.debug('Root logger already has file logging')
     else:
-        root_logger.debug(f'Adding file handler {logging_filename}')
+        basmati_logger.debug(f'Adding file handler {logging_filename}')
         file_formatter = logging.Formatter('%(asctime)s:%(name)-20s:%(levelname)-8s: %(message)s')
         fileHandler = logging.FileHandler(logging_filename, mode='a')
         fileHandler.setFormatter(file_formatter)
         fileHandler.setLevel(logging.DEBUG)
 
-        root_logger.addHandler(fileHandler)
+        basmati_logger.addHandler(fileHandler)
         if root:
-            root_logger.has_file_logging = True
+            basmati_logger.has_file_logging = True
 
 
 def setup_logger(debug=False, colour=True, warn_stderr=False):

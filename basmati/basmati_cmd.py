@@ -25,13 +25,6 @@ def main(argv, import_log_msg=''):
     basmati_cmds, args = parse_commands('basmati', ARGS, cmds, argv[1:])
     cmd = basmati_cmds[args.cmd_name]
 
-    env_debug = os.getenv('BASMATI_DEBUG') == 'True'
-
-    if args.DEBUG or env_debug:
-        debug = True
-    else:
-        debug = False
-
     colour = not args.bw_logs
     warn_stderr = False
 
