@@ -11,7 +11,7 @@ from basmati.hydrosheds import load_hydrobasins_geodataframe
 
 def plot_selected_basins(hb_gdf):
     id_dist_max = hb_gdf['DIST_MAIN'].idxmax()
-    furthest = hb_gdf.iloc[id_dist_max]
+    furthest = hb_gdf.loc[id_dist_max]
 
     downstream_furthest = hb_gdf.find_downstream(furthest.PFAF_ID)
     coast_row = downstream_furthest.iloc[0]
@@ -20,7 +20,7 @@ def plot_selected_basins(hb_gdf):
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines()
     upstream.plot(ax=ax)
-    downstream_furthest.plot(ax=ax, color='g')
+    downstream_furthest.plot(ax=ax, color='yellow')
 
     id_up_area_max = hb_gdf['UP_AREA'].idxmax()
     hb_gdf.find_upstream(hb_gdf.loc[id_up_area_max].PFAF_ID).plot(ax=ax, color='red')
