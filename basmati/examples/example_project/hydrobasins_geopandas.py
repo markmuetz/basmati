@@ -27,7 +27,7 @@ def plot_selected_basins(hb_gdf):
 
     hb_gdf[hb_gdf['NEXT_DOWN'] == 0].plot(ax=ax, color='k')
 
-    filename = 'hydrobains_level8_selected_basins.png'
+    filename = 'hydrobasins_level8_selected_basins.png'
     plt.savefig(f'figs/{filename}')
 
 

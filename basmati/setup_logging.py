@@ -100,6 +100,6 @@ def setup_logger(debug=False, colour=True, warn_stderr=False):
         root_logger.is_setup = True
 
     for hdlr in root_handlers:
-        basmati_logger.debug('Removed root handler: {}', hdlr)
+        basmati_logger.debug(f'Removed root handler: {hdlr}')
 
     return basmati_logger
