@@ -25,6 +25,7 @@ def main(argv, import_log_msg=''):
     basmati_cmds, args = parse_commands('basmati', ARGS, cmds, argv[1:])
     cmd = basmati_cmds[args.cmd_name]
 
+    debug = args.DEBUG
     colour = not args.bw_logs
     warn_stderr = False
 
