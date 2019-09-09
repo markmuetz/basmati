@@ -13,17 +13,8 @@ from .basmati_errors import BasmatiError
 
 __version__ = VERSION
 
-__all__ = [
-    basmati_main,
-    BasmatiProject,
-    BasmatiError,
-]
-setup_logger()
-
 def setup_ipython(logger_kwargs={}):
     """Injects useful variables into the global namespace. Only use interactively."""
-    setup_logger(**logger_kwargs)
-
     import sys
     from collections import OrderedDict
     import __main__ as main
@@ -34,7 +25,7 @@ def setup_ipython(logger_kwargs={}):
     # Thanks: http://stackoverflow.com/a/14298025/54557
     builtins = sys.modules['builtins'].__dict__
 
-    project = BasmatiProject()
+    project = BasmatiProject(**logger_kwargs)
     globals_vars = OrderedDict()
     globals_vars['project'] = project
     print('Adding to global namespace:')
@@ -42,3 +33,10 @@ def setup_ipython(logger_kwargs={}):
         print('  ' + key)
         builtins[key] = value
 
+__all__ = [
+    setup_logger,
+    basmati_main,
+    BasmatiProject,
+    BasmatiError,
+    setup_ipython,
+]

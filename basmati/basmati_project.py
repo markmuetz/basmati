@@ -53,11 +53,19 @@ class BasmatiProject:
         (project_dir / 'figs').mkdir()
         logger.info(f'Created and initalized {project_dir}')
 
-    def __init__(self, cwd=Path.cwd(), project_dir=Path.cwd()):
+    def __init__(self, cwd=Path.cwd(), project_dir=Path.cwd(),
+                 debug=False, colour=True, warn_stderr=True):
         assert BasmatiProject._is_project_root_dir(project_dir)
+
         self.project_dir = project_dir
         self.cwd = cwd
         self.config = None
+
+        debug |= os.getenv('$BASMATI_DEBUG', 'false').lower() == 'true'
+        colour |= os.getenv('$BASMATI_COLOUR', 'false').lower() == 'true'
+        warn_stderr |= os.getenv('$BASMATI_WARN_STDERR', 'false').lower() == 'true'
+
+        self.logger = setup_logger(debug, colour, warn_stderr)
         self.logging_filename = Path(self.project_dir / self.dotbasmati_dir / 'basmati.log')
         add_file_logging(self.logging_filename)
 

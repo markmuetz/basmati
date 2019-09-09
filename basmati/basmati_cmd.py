@@ -34,16 +34,18 @@ def main(argv, import_log_msg=''):
 
     colour = not args.bw_logs
     warn_stderr = False
-    logger = setup_logger(debug, colour, warn_stderr)
 
     project_dir = BasmatiProject.basmati_project_dir(Path.cwd())
     if project_dir:
-        project = BasmatiProject(Path.cwd(), project_dir)
+        project = BasmatiProject(Path.cwd(), project_dir, 
+                                 debug, colour, warn_stderr)
+        logger = project.logger
     else:
         if not getattr(cmd, 'RUN_OUTSIDE_PROJECT', False):
             logger.error('Not in a basmati project')
             return
         project = None
+        logger = setup_logger(debug, colour, warn_stderr)
 
     logger.debug(f'start dir: {Path.cwd()}')
     logger.debug(f'basmati import: {import_log_msg}')
