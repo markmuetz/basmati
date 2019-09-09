@@ -6,7 +6,7 @@ from logging import getLogger
 
 import basmati
 from basmati.basmati_errors import BasmatiError
-from basmati.setup_logging import setup_logging, add_file_logging
+from basmati.setup_logging import setup_logger, add_file_logging
 
 logger = getLogger('basmati.bm_project')
 
