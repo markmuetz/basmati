@@ -35,11 +35,11 @@ def main(argv, import_log_msg=''):
                                  debug, colour, warn_stderr)
         logger = project.logger
     else:
+        logger = setup_logger(debug, colour, warn_stderr)
         if not getattr(cmd, 'RUN_OUTSIDE_PROJECT', False):
             logger.error('Not in a basmati project')
             return
         project = None
-        logger = setup_logger(debug, colour, warn_stderr)
 
     logger.debug(f'start dir: {Path.cwd()}')
     logger.debug(f'basmati import: {import_log_msg}')
