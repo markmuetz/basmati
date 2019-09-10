@@ -1,22 +1,30 @@
 from pathlib import Path
 import pickle
+from hashlib import sha1
+from functools import wraps
 
 import numpy as np
 
 
 class Cache(dict):
     def __init__(self, hold_in_memory=True, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.hold_in_memory = hold_in_memory
         self.cache_dir = Path('.basmati/cache')
         if not self.cache_dir.exists():
             self.cache_dir.mkdir()
 
+        # self.update(*args, **kwargs)
         self._memory = {}
 
-        self.update(*args, **kwargs)
+    def wrap(self, func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            return self.fn(func, *args, **kwargs)
+        return wrapper
 
-    def fn(fn, *args, **kwargs):
-        fn_key = sha1(str((fn, args, kwargs).encode())).hexdigest()
+    def fn(self, fn, *args, **kwargs):
+        fn_key = sha1(str((fn.__name__, fn.__code__.co_code, args, kwargs)).encode()).hexdigest()
         if fn_key in self:
             return self[fn_key]
         val = fn(*args, **kwargs)
