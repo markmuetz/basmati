@@ -1,2 +1,2 @@
 #!/bin/bash
-conda env export > basmti_env.yml
+conda env export | grep -v "^prefix: " > basmti_env.yml
