@@ -177,5 +177,5 @@ dependencies:
   - zlib=1.2.11=h516909a_1006
   - zstd=1.4.0=h3b9ef0a_0
   - pip:
-    - configparser==4.0.1
-prefix: /home/markmuetz/anaconda3/envs/basmati_env
+    - configparser==4.0.2
+
