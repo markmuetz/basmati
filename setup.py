@@ -26,9 +26,7 @@ setup(
     maintainer_email='mark.muetzelfeldt@reading.ac.uk',
     packages=[
         'basmati',
-        'basmati.cmds',
-        'basmati.examples',
-        'basmati.examples.example_project',
+        'basmati.demo',
         ],
     scripts=[
         'bin/basmati',
@@ -47,7 +45,7 @@ setup(
     extras_require={
         # 'display': ['matplotlib'],
     },
-    package_data={'basmati.examples.example_project': ['schiemann2018mean_supplementary_tableS1.csv']},
+    package_data={'basmati.demo': ['schiemann2018mean_supplementary_tableS1.csv']},
     url='https://github.com/markmuetz/basmati',
     classifiers=[
         'Environment :: Console',

@@ -5,38 +5,12 @@
 
 from .version import VERSION
 from .setup_logging import setup_logger
-from .basmati_cmd import main as basmati_main
-from .basmati_project import BasmatiProject
 from .basmati_errors import BasmatiError
 # Time consuming. Leave as: from basmati import hydrosheds
 # from .hydrosheds import load_hydrobasins_geodataframe, load_hydrosheds_dem
 
 __version__ = VERSION
-
-def setup_ipython(logger_kwargs={}):
-    """Injects useful variables into the global namespace. Only use interactively."""
-    import sys
-    from collections import OrderedDict
-    import __main__ as main
-    # Thanks: http://stackoverflow.com/a/2356420/54557
-    # Guard to check being called interactively:
-    if hasattr(main, '__file__'):
-        raise Exception('Should only be used interactively')
-    # Thanks: http://stackoverflow.com/a/14298025/54557
-    builtins = sys.modules['builtins'].__dict__
-
-    project = BasmatiProject(**logger_kwargs)
-    globals_vars = OrderedDict()
-    globals_vars['project'] = project
-    print('Adding to global namespace:')
-    for key, value in globals_vars.items():
-        print('  ' + key)
-        builtins[key] = value
-
 __all__ = [
     setup_logger,
-    basmati_main,
-    BasmatiProject,
     BasmatiError,
-    setup_ipython,
 ]

@@ -1,8 +1,5 @@
 #!/usr/bin/env python
-# PYTHON_ARGCOMPLETE_OK
-"""User facing basmati command entry point.
-
-$ basmati <cmd>"""
+"""basmati command entry point."""
 
 import os
 import sys
@@ -17,15 +14,11 @@ except ImportError:
         import_log_msg = 'basmati_pythonpath'
         # Called with appropriately set env var.
         sys.path.insert(0, path)
-    else:
-        import_log_msg = 'set_directly'
-        # Called directly. This file is <basmati_dir>/bin/basmati - go up to <basmati_dir>.
-        basmati_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        sys.path.insert(0, basmati_dir)
+        # Find out whether basmati correctly added to path
+        import basmati
+    raise Exception('Cannot find basmati: install or set BASMATI_PYTHONPATH')
 
-    # Find out whether basmati correctly added to path
-    import basmati
+from basmati.basmati_cmd import basmati_cmd
 
-from basmati.basmati_cmd import main
-main(sys.argv, import_log_msg)
+basmati_cmd(sys.argv, import_log_msg=import_log_msg)
 sys.exit(0)

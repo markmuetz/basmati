@@ -1,65 +1,72 @@
-"""Entry point into running basmati from command line
+import argparse
 
-all commands are run as:
-    basmati [basmati_opts] <cmd> [cmd_opts] [cmd_args]
-"""
-import os
-from pathlib import Path
+from .setup_logging import setup_logger
+from .basmati_errors import BasmatiError
+from .basmati_demo import demo_main
+from .downloader import download_main, DATASETS, HYDROBASINS_REGIONS
+from .version import get_version
 
-import basmati
-import basmati.cmds as cmds
-from basmati.cmds.cmd_context import CmdContext
-from basmati.command_parser import parse_commands
-from basmati.setup_logging import setup_logger
-from basmati.basmati_project import BasmatiProject
-from basmati.basmati_errors import BasmatiError
+def _parse_args(argv):
+    parser = argparse.ArgumentParser(description='BASMATI command line tool')
 
-# Top level args, e.g. basmati -D ...
-ARGS = [(['--throw-exceptions', '-X'], {'action': 'store_true', 'default': False}),
-        (['--DEBUG', '-D'], {'action': 'store_true', 'default': False}),
-        (['--bw-logs', '-b'], {'action': 'store_true', 'default': False})]
+    # Top-level arguments.
+    parser.add_argument('--debug', '-D', help='Enable debug logging', action='store_true')
+    parser.add_argument('--bw', '-B', help='Disable colour logging', action='store_true')
+    parser.add_argument('--warn', '-W', help='Warn on stderr', action='store_true')
+
+    subparsers = parser.add_subparsers(dest='subcmd_name')
+    # name of subparser ends up in subcmd_name -- use for command dispatch.
+
+    # demo
+    demo_parser = subparsers.add_parser('demo', help='Run through BASMATI demo')
+
+    # download
+    download_parser = subparsers.add_parser('download', aliases=['dl'], 
+                                            help='Download HydroSHEDS datasets')
+    download_parser.add_argument('--dataset', '-d', 
+                                 required=True,
+                                 choices=DATASETS, 
+                                 help='Dataset to download')
+    download_parser.add_argument('--region', '-r', 
+                                 required=True,
+                                 choices=HYDROBASINS_REGIONS, 
+                                 help='Region to download')
+    download_parser.add_argument('--delete-zip',
+                                 action='store_true',
+                                 help='Delete zipfile after unpacking')
+
+    # version
+    version_parser = subparsers.add_parser('version', help='Print BASMATI version')
+    version_parser.add_argument('--long', '-l', action='store_true', help='long version')
+
+    args = parser.parse_args(argv[1:])
+
+    return args
 
 
-def main(argv, import_log_msg=''):
-    "Parse commands/env, setup logging, dispatch to cmds/<cmd>.py"
-    basmati_cmds, args = parse_commands('basmati', ARGS, cmds, argv[1:])
-    cmd = basmati_cmds[args.cmd_name]
+def basmati_cmd(argv, import_log_msg=None):
+    args = _parse_args(argv)
+    loglevel = 'DEBUG' if args.debug else 'INFO'
 
-    debug = args.DEBUG
-    colour = not args.bw_logs
-    warn_stderr = False
-
-    project_dir = BasmatiProject.basmati_project_dir(Path.cwd())
-    if project_dir:
-        project = BasmatiProject(Path.cwd(), project_dir, 
-                                 debug, colour, warn_stderr)
-        logger = project.logger
-    else:
-        logger = setup_logger(debug, colour, warn_stderr)
-        if not getattr(cmd, 'RUN_OUTSIDE_PROJECT', False):
-            logger.error('Not in a basmati project')
-            return
-        project = None
-
-    logger.debug(f'start dir: {Path.cwd()}')
-    logger.debug(f'basmati import: {import_log_msg}')
-    logger.debug(' '.join(argv))
+    logger = setup_logger(loglevel, not args.bw, args.warn)
+    logger.debug(import_log_msg)
+    logger.debug(argv)
     logger.debug(args)
-    logger.debug(args.cmd_name)
+    
+    try:
+        # Dispatch command.
+        # N.B. args should always be dereferenced at this point,
+        # not passed into any subsequent functions.
+        if args.subcmd_name == 'demo':
+            demo_main()
+        elif args.subcmd_name == 'download':
+            download_main(args.dataset, args.region, args.delete_zip)
+        elif args.subcmd_name == 'version':
+            print(get_version(form='long' if args.long else 'short'))
 
-    cmd_ctx = CmdContext(project)
-    if not args.throw_exceptions:
-        logger.debug('Catching all exceptions')
-        try:
-            # dispatch on arg
-            return cmd.main(cmd_ctx, args)
-        except BasmatiError as be:
-            logger.error(f'{be}')
-        except Exception as e:
-            logger.exception(f'{e}')
-            if debug:
-                import ipdb
-                ipdb.post_mortem()
-            raise
-    else:
-        return cmd.main(cmd_ctx, args)
+    except BasmatiError as be:
+        logger.error(be)
+        raise
+    except Exception as e:
+        logger.error(e)
+        raise

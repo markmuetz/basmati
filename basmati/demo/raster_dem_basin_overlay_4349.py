@@ -1,15 +1,19 @@
+import os
+import logging
+
 import numpy as np
 import matplotlib.pyplot as plt
 
-from basmati import BasmatiProject
 from basmati.hydrosheds import load_hydrobasins_geodataframe, load_hydrosheds_dem
 from basmati.utils import build_raster_from_geometries
 
+logger = logging.getLogger(__name__)
 
-if __name__ == '__main__':
-    project = BasmatiProject()
-    hb_gdf = load_hydrobasins_geodataframe(project.hydrosheds_dir, 'as', range(4, 6))
-    bounds, tx, dem, mask = load_hydrosheds_dem(project.hydrosheds_dir, 'as')
+def basin_overlay_4349():
+    logger.info(f'Running {__file__}: basin_overlay_4349()')
+    hydrosheds_dir = os.getenv('HYDROSHEDS_DIR')
+    hb_gdf = load_hydrobasins_geodataframe(hydrosheds_dir, 'as', range(4, 6))
+    bounds, tx, dem, mask = load_hydrosheds_dem(hydrosheds_dir, 'as')
     extent = (bounds.left, bounds.right, bounds.bottom, bounds.top)
 
     hb_gdf4 = hb_gdf[hb_gdf.LEVEL == 4]
@@ -27,6 +31,7 @@ if __name__ == '__main__':
     plt.xlim((90, 115))
     plt.ylim((20, 40))
 
-    filename = 'dem_of_pfaf_id_4349.png'
-    plt.savefig(f'figs/{filename}')
-
+    output_filename = 'basmati_demo_figs/dem_of_pfaf_id_4349.png'
+    logger.info(f'Saving figure to: {output_filename}')
+    plt.savefig(output_filename)
+    plt.close('all')

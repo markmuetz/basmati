@@ -1,7 +1,17 @@
+import subprocess as sp
+
 import numpy as np
 from scipy import ndimage
 
 from rasterio.features import rasterize
+
+
+def sysrun(cmd):
+    """Run a system command, returns a CompletedProcess
+
+    raises CalledProcessError if cmd is bad.
+    to access output: sysrun(cmd).stdout"""
+    return sp.run(cmd, check=True, shell=True, stdout=sp.PIPE, stderr=sp.PIPE, encoding='utf8') 
 
 
 def build_raster_from_geometries(geometries, shape, tx):

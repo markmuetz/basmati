@@ -1,12 +1,16 @@
 # coding: utf-8
-import numpy as np
+import os
+import logging
+from pathlib import Path
+
 import pandas as pd
 
 import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
 
-from basmati import BasmatiProject
 from basmati.hydrosheds import load_hydrobasins_geodataframe
+
+logger = logging.getLogger(__name__)
 
 
 def plot_selected_basins(hb_gdf):
@@ -27,8 +31,9 @@ def plot_selected_basins(hb_gdf):
 
     hb_gdf[hb_gdf['NEXT_DOWN'] == 0].plot(ax=ax, color='k')
 
-    filename = 'hydrobasins_level8_selected_basins.png'
-    plt.savefig(f'figs/{filename}')
+    output_filename = 'basmati_demo_figs/hydrobasins_level8_selected_basins.png'
+    logger.info(f'Saving figure to: {output_filename}')
+    plt.savefig(output_filename)
 
 
 def plot_basin_area_stats(hb_gdf):
@@ -38,19 +43,27 @@ def plot_basin_area_stats(hb_gdf):
         hb_gdf_lev.SUB_AREA.hist(bins=10)
         plt.ylabel('number')
         plt.xlabel('area (km$^2$)')
-        plt.savefig(f'figs/sub_area_hist_{level}.png')
+        plt.savefig(f'basmati_demo_figs/sub_area_hist_{level}.png')
 
-    df = pd.read_csv('schiemann2018mean_supplementary_tableS1.csv')
+    curr_dirpath = Path(__file__).parent
+    csv_filepath = curr_dirpath/ 'schiemann2018mean_supplementary_tableS1.csv'
+    logger.debug(f'loading CSV from: {csv_filepath}')
+
+    df = pd.read_csv(str(csv_filepath))
     plt.figure(f'Schiemann2018 hist')
     df.Area.hist(bins=10)
     plt.ylabel('number')
     plt.xlabel('area (km$^2$)')
-    plt.savefig(f'figs/schiemann2018_sub_area_hist.png')
+    output_filename = 'basmati_demo_figs/schiemann2018_sub_area_hist.png'
+    logger.info(f'Saving figure to: {output_filename}')
+    plt.savefig(output_filename)
 
 
-if __name__ == '__main__':
-    project = BasmatiProject()
-    hb_gdf = load_hydrobasins_geodataframe(project.hydrosheds_dir, 'as', range(1, 9))
+def hydrobasins_geopandas():
+    logger.info(f'Running {__file__}: hydrobasins_geopandas()')
+    hydrosheds_dir = os.getenv('HYDROSHEDS_DIR')
+    hb_gdf = load_hydrobasins_geodataframe(hydrosheds_dir, 'as', range(1, 9))
 
     plot_selected_basins(hb_gdf[hb_gdf.LEVEL == 8])
     plot_basin_area_stats(hb_gdf)
+    plt.close('all')
