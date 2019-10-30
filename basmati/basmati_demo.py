@@ -2,9 +2,9 @@ import os
 import logging
 from pathlib import Path
 
-from .demo.disp_dem import disp_dem
-from .demo.hydrobasins_geopandas import hydrobasins_geopandas
-from .demo.raster_dem_basin_overlay_4349 import basin_overlay_4349
+from basmati.demo.disp_dem import disp_dem
+from basmati.demo.hydrobasins_geopandas import hydrobasins_geopandas
+from basmati.demo.raster_dem_basin_overlay_4349 import basin_overlay_4349
 
 logger = logging.getLogger(__name__)
 

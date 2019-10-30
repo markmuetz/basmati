@@ -6,8 +6,8 @@ import zipfile
 
 import requests
 
-from .basmati_errors import BasmatiError
-from .utils import sysrun
+from basmati.basmati_errors import BasmatiError
+from basmati.utils import sysrun
 
 logger = getLogger('basmati.download')
 

@@ -1,10 +1,11 @@
 import argparse
 
-from .setup_logging import setup_logger
-from .basmati_errors import BasmatiError
-from .basmati_demo import demo_main
-from .downloader import download_main, DATASETS, HYDROBASINS_REGIONS
-from .version import get_version
+from basmati.setup_logging import setup_logger
+from basmati.basmati_errors import BasmatiError
+from basmati.basmati_demo import demo_main
+from basmati.downloader import download_main, DATASETS, HYDROBASINS_REGIONS
+from basmati.version import get_version
+
 
 def _parse_args(argv):
     parser = argparse.ArgumentParser(description='BASMATI command line tool')
