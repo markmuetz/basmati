@@ -1,8 +1,8 @@
 from logging import getLogger
 from pathlib import Path
+import zipfile
 
 import requests
-import zipfile
 
 from basmati.basmati_errors import BasmatiError
 
