@@ -22,7 +22,7 @@ install:
   - source activate basmati_env
   - pip install -e .
   - conda list
-  - python -c "import basmati; basmati.get_version();"
+  - python -c "import basmati; print(basmati.__version__);"
 
 script:
   - nosetest basmati
