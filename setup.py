@@ -43,7 +43,7 @@ setup(
         # 'iris',
         ],
     extras_require={
-        # 'display': ['matplotlib'],
+        'testing': ['nose', 'mock'],
     },
     package_data={'basmati.demo': ['schiemann2018mean_supplementary_tableS1.csv']},
     url='https://github.com/markmuetz/basmati',

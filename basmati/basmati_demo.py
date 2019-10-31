@@ -2,6 +2,7 @@ import os
 import logging
 from pathlib import Path
 
+from basmati import BasmatiError
 from basmati.demo.disp_dem import disp_dem
 from basmati.demo.hydrobasins_geopandas import hydrobasins_geopandas
 from basmati.demo.raster_dem_basin_overlay_4349 import basin_overlay_4349
@@ -36,11 +37,12 @@ def demo_main():
     logger.info('====================')
 
     if not os.getenv('HYDROSHEDS_DIR'):
-        logger.error('env var HYDROSHEDS_DIR not set')
+        msg = 'env var HYDROSHEDS_DIR not set'
+        logger.error(msg)
         logger.info('Set this variable to the HydroSHEDS data directory')
         logger.info('')
         usage_message(logger)
-        return
+        raise BasmatiError(msg)
 
     figsdir = Path('basmati_demo_figs')
     if not figsdir.exists():

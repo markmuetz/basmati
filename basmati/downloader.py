@@ -4,57 +4,52 @@ from pathlib import Path
 import itertools
 import zipfile
 
-import requests
-
 from basmati.basmati_errors import BasmatiError
 from basmati.utils import sysrun
 
 logger = getLogger('basmati.download')
 
-# These URLs are stable, but they won't download with requests. They WILL download using wget though.
-# Copied from: https://www.dropbox.com/sh/hmpwobbz9qixxpe/AAAI_jasMJPZl_6wX6d3vEOla?dl=0
-
 DATASETS = ['ALL', 'hydrosheds_dem_30s', 'hydrobasins_all_levels']
 HYDROBASINS_REGIONS = ['ALL', 'af', 'ar', 'as', 'au', 'eu', 'gr', 'na', 'sa', 'si']
 
+# These URLs are stable, but they won't download with requests. They WILL download using wget though.
+# Copied from: https://www.dropbox.com/sh/hmpwobbz9qixxpe/AAAI_jasMJPZl_6wX6d3vEOla?dl=0
 HYDROSHEDS_URLS = {
     'hydrosheds_dem_30s': {
-        'af': ('https://www.dropbox.com/sh/hmpwobbz9qixxpe/AAB2aqcFLIqVo2aIrxxXlSdxa/HydroSHEDS_DEM/DEM_30s_BIL/af_dem_30s_bil.zip', 'af_dem_30s_bil.zip'),
-        'as': ('https://www.dropbox.com/sh/hmpwobbz9qixxpe/AABCE7PbsmXH4pWoiXnLooRNa/HydroSHEDS_DEM/DEM_30s_BIL/as_dem_30s_bil.zip', 'as_dem_30s_bil.zip'),
-        'au': ('https://www.dropbox.com/sh/hmpwobbz9qixxpe/AABRayBEd6B4s6ayQwjTdHdba/HydroSHEDS_DEM/DEM_30s_BIL/au_dem_30s_bil.zip', 'au_dem_30s_bil.zip'),
-        'ca': ('https://www.dropbox.com/sh/hmpwobbz9qixxpe/AAB5k5NMTevSo08qVJG3u34_a/HydroSHEDS_DEM/DEM_30s_BIL/ca_dem_30s_bil.zip', 'ca_dem_30s_bil.zip'),
-        'eu': ('https://www.dropbox.com/sh/hmpwobbz9qixxpe/AAB37xAq8GE7htebBvgS3DPTa/HydroSHEDS_DEM/DEM_30s_BIL/eu_dem_30s_bil.zip', 'eu_dem_30s_bil.zip'),
-        'na': ('https://www.dropbox.com/sh/hmpwobbz9qixxpe/AADOB5dtqwWdkruat6T3hU_2a/HydroSHEDS_DEM/DEM_30s_BIL/na_dem_30s_bil.zip', 'na_dem_30s_bil.zip'),
-        'sa': ('https://www.dropbox.com/sh/hmpwobbz9qixxpe/AACLgapv6MTaRWs-MTEeZNXRa/HydroSHEDS_DEM/DEM_30s_BIL/sa_dem_30s_bil.zip', 'sa_dem_30s_bil.zip'),
+        'af': ('https://www.dropbox.com/sh/hmpwobbz9qixxpe/AAB2aqcFLIqVo2aIrxxXlSdxa/'
+               'HydroSHEDS_DEM/DEM_30s_BIL/af_dem_30s_bil.zip', 'af_dem_30s_bil.zip'),
+        'as': ('https://www.dropbox.com/sh/hmpwobbz9qixxpe/AABCE7PbsmXH4pWoiXnLooRNa/'
+               'HydroSHEDS_DEM/DEM_30s_BIL/as_dem_30s_bil.zip', 'as_dem_30s_bil.zip'),
+        'au': ('https://www.dropbox.com/sh/hmpwobbz9qixxpe/AABRayBEd6B4s6ayQwjTdHdba/'
+               'HydroSHEDS_DEM/DEM_30s_BIL/au_dem_30s_bil.zip', 'au_dem_30s_bil.zip'),
+        'ca': ('https://www.dropbox.com/sh/hmpwobbz9qixxpe/AAB5k5NMTevSo08qVJG3u34_a/'
+               'HydroSHEDS_DEM/DEM_30s_BIL/ca_dem_30s_bil.zip', 'ca_dem_30s_bil.zip'),
+        'eu': ('https://www.dropbox.com/sh/hmpwobbz9qixxpe/AAB37xAq8GE7htebBvgS3DPTa/'
+               'HydroSHEDS_DEM/DEM_30s_BIL/eu_dem_30s_bil.zip', 'eu_dem_30s_bil.zip'),
+        'na': ('https://www.dropbox.com/sh/hmpwobbz9qixxpe/AADOB5dtqwWdkruat6T3hU_2a/'
+               'HydroSHEDS_DEM/DEM_30s_BIL/na_dem_30s_bil.zip', 'na_dem_30s_bil.zip'),
+        'sa': ('https://www.dropbox.com/sh/hmpwobbz9qixxpe/AACLgapv6MTaRWs-MTEeZNXRa/'
+               'HydroSHEDS_DEM/DEM_30s_BIL/sa_dem_30s_bil.zip', 'sa_dem_30s_bil.zip'),
     },
     'hydrobasins_all_levels': {
-        'af': ('https://www.dropbox.com/sh/hmpwobbz9qixxpe/AADo046FqiQlMrjFwfYjhlFSa/HydroBASINS/standard/af/hybas_af_lev01-12_v1c.zip', 'hybas_af_lev01-12_v1c.zip'),
-        'as': ('https://www.dropbox.com/sh/hmpwobbz9qixxpe/AAAloxuhEEFdoYfY4ZB-ikTma/HydroBASINS/standard/as/hybas_as_lev01-12_v1c.zip', 'hybas_as_lev01-12_v1c.zip'),
-        'au': ('https://www.dropbox.com/sh/hmpwobbz9qixxpe/AABm11_TQtXvWMxm5yo6p7y9a/HydroBASINS/standard/au/hybas_au_lev01-12_v1c.zip', 'hybas_au_lev01-12_v1c.zip'),
-        'eu': ('https://www.dropbox.com/sh/hmpwobbz9qixxpe/AABAwy_KMsRm9cRJWqo24JhBa/HydroBASINS/standard/eu/hybas_eu_lev01-12_v1c.zip', 'hybas_eu_lev01-12_v1c.zip'),
-        'gr': ('https://www.dropbox.com/sh/hmpwobbz9qixxpe/AAB8rkuyt2jJ1iticE4mC9BQa/HydroBASINS/standard/gr/hybas_gr_lev01-12_v1c.zip', 'hybas_gr_lev01-12_v1c.zip'),
-        'na': ('https://www.dropbox.com/sh/hmpwobbz9qixxpe/AAA2M3Kn5lRfu50t8LY-YQJEa/HydroBASINS/standard/na/hybas_na_lev01-12_v1c.zip', 'hybas_na_lev01-12_v1c.zip'),
-        'sa': ('https://www.dropbox.com/sh/hmpwobbz9qixxpe/AADhV7E60JvMCwqFqJrqBzN_a/HydroBASINS/standard/sa/hybas_sa_lev01-12_v1c.zip', 'hybas_sa_lev01-12_v1c.zip'),
-        'si': ('https://www.dropbox.com/sh/hmpwobbz9qixxpe/AABQ7aOlIb5PVHF9xPx0WQ81a/HydroBASINS/standard/si/hybas_si_lev01-12_v1c.zip', 'hybas_si_lev01-12_v1c.zip'),
+        'af': ('https://www.dropbox.com/sh/hmpwobbz9qixxpe/AADo046FqiQlMrjFwfYjhlFSa/'
+               'HydroBASINS/standard/af/hybas_af_lev01-12_v1c.zip', 'hybas_af_lev01-12_v1c.zip'),
+        'as': ('https://www.dropbox.com/sh/hmpwobbz9qixxpe/AAAloxuhEEFdoYfY4ZB-ikTma/'
+               'HydroBASINS/standard/as/hybas_as_lev01-12_v1c.zip', 'hybas_as_lev01-12_v1c.zip'),
+        'au': ('https://www.dropbox.com/sh/hmpwobbz9qixxpe/AABm11_TQtXvWMxm5yo6p7y9a/'
+               'HydroBASINS/standard/au/hybas_au_lev01-12_v1c.zip', 'hybas_au_lev01-12_v1c.zip'),
+        'eu': ('https://www.dropbox.com/sh/hmpwobbz9qixxpe/AABAwy_KMsRm9cRJWqo24JhBa/'
+               'HydroBASINS/standard/eu/hybas_eu_lev01-12_v1c.zip', 'hybas_eu_lev01-12_v1c.zip'),
+        'gr': ('https://www.dropbox.com/sh/hmpwobbz9qixxpe/AAB8rkuyt2jJ1iticE4mC9BQa/'
+               'HydroBASINS/standard/gr/hybas_gr_lev01-12_v1c.zip', 'hybas_gr_lev01-12_v1c.zip'),
+        'na': ('https://www.dropbox.com/sh/hmpwobbz9qixxpe/AAA2M3Kn5lRfu50t8LY-YQJEa/'
+               'HydroBASINS/standard/na/hybas_na_lev01-12_v1c.zip', 'hybas_na_lev01-12_v1c.zip'),
+        'sa': ('https://www.dropbox.com/sh/hmpwobbz9qixxpe/AADhV7E60JvMCwqFqJrqBzN_a/'
+               'HydroBASINS/standard/sa/hybas_sa_lev01-12_v1c.zip', 'hybas_sa_lev01-12_v1c.zip'),
+        'si': ('https://www.dropbox.com/sh/hmpwobbz9qixxpe/AABQ7aOlIb5PVHF9xPx0WQ81a/'
+               'HydroBASINS/standard/si/hybas_si_lev01-12_v1c.zip', 'hybas_si_lev01-12_v1c.zip'),
     }
 }
-
-
-# Thanks:
-# https://stackoverflow.com/a/16696317/54557
-def download_file_python(basedir, url, filename):
-    filename = basedir / filename
-    if filename.exists():
-        raise BasmatiError(f'{filename} already exists')
-
-    # NOTE the stream=True parameter below
-    with requests.get(url, stream=True) as r:
-        r.raise_for_status()
-        with open(filename, 'wb') as f:
-            for chunk in r.iter_content(chunk_size=8192): 
-                if chunk: # filter out keep-alive new chunks
-                    f.write(chunk)
-    return filename
 
 
 def download_file_wget(basedir, url, filename):
@@ -74,10 +69,13 @@ def unzip_file(basedir, filename):
     with zipfile.ZipFile(filename, 'r') as zip_ref:
         zip_ref.extractall(str(basedir))
 
+
 class UnrecognizedRegionError(BasmatiError):
     pass
 
+
 class HydroshedsDownloader:
+    # N.B. more restrictive than HYDROBASINS_REGIONS
     hydrosheds_30s_regions = ['af', 'ar', 'as', 'au', 'eu', 'na', 'sa']
 
     def __init__(self, hydrosheds_dir, delete_zip):
@@ -108,7 +106,7 @@ class HydroshedsDownloader:
             self._unzip_file(filename)
 
     def download_hydrobasins_all_levels(self, region):
-        if region not in self.hydrosheds_30s_regions:
+        if region not in HYDROBASINS_REGIONS:
             msg = (f'Unrecognized region: {region}, must be one of:'
                    f'{", ".join(self.hydrosheds_30s_regions)}')
             raise UnrecognizedRegionError(msg)
@@ -125,14 +123,21 @@ class HydroshedsDownloader:
 def download_main(dataset, region, delete_zip):
     hydrosheds_dir = os.getenv('HYDROSHEDS_DIR')
     if not hydrosheds_dir:
-        logger.error('env var HYDROSHEDS_DIR not set')
+        msg = 'env var HYDROSHEDS_DIR not set'
+        logger.error(msg)
         logger.info('Set this variable to the HydroSHEDS data directory.')
         logger.info('Downloaded datasets will be saved here.')
-        return
+        raise BasmatiError(msg)
 
     if dataset not in DATASETS:
-        logger.error(f'Unrecognized dataset, must be one of: {", ".join(DATASETS)}')
-        return
+        msg = f'Unrecognized dataset, must be one of: {", ".join(DATASETS)}'
+        logger.error(msg)
+        raise BasmatiError(msg)
+
+    if region not in HYDROBASINS_REGIONS:
+        msg = f'Unrecognized region, must be one of: {", ".join(HYDROBASINS_REGIONS)}'
+        logger.error(msg)
+        raise BasmatiError(msg)
 
     hydrosheds_dir = Path(hydrosheds_dir)
     if not hydrosheds_dir.exists():
@@ -159,4 +164,3 @@ def download_main(dataset, region, delete_zip):
                 downloader.download_hydrobasins_all_levels(region)
         except UnrecognizedRegionError:
             logger.info(f'  {dataset} {region} not found')
-
