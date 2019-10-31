@@ -1,11 +1,12 @@
 language: python
+python: 3.7
 
 sudo: false
 
 matrix:
   include:
     # Only one test for these Python versions
-    - env: ENV_FILE="envs/basmati_env.yaml"
+    - env: ENV_FILE="envs/basmati_env.yml"
 
 install:
   # Install conda
