@@ -1,3 +1,4 @@
+# Copied from geopandas .travis.yml
 language: python
 python: 3.7
 
@@ -5,7 +6,6 @@ sudo: false
 
 matrix:
   include:
-    # Only one test for these Python versions
     - env: ENV_FILE="envs/basmati_env.yml"
 
 install:
@@ -19,18 +19,14 @@ install:
 
   # Install dependencies
   - conda env create --file="${ENV_FILE}"
-  - conda activate basmati_env
-#  - if [ "$DEV" ]; then pip install git+https://github.com/pydata/pandas.git; fi
-#  - if [ "$DEV" ]; then pip install git+https://github.com/matplotlib/matplotlib.git; fi
-#  - if [ "$STYLE" ]; then pip install black flake8; fi
+  - source activate basmati_env
   - pip install -e .
   - conda list
   - python -c "import basmati; basmati.get_version();"
 
-# script:
-#   - py.test geopandas --cov geopandas -v --cov-report term-missing
-#   - if [ "$STYLE" ]; then black --check geopandas; fi
-#   - if [ "$STYLE" ]; then flake8 geopandas; fi
+script:
+  - nosetest basmati
+
 # 
 # after_success:
 #   - codecov
