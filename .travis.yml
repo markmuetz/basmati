@@ -1,0 +1,36 @@
+language: python
+
+sudo: false
+
+matrix:
+  include:
+    # Only one test for these Python versions
+    - env: ENV_FILE="envs/basmati_env.yaml"
+
+install:
+  # Install conda
+  - wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
+  - bash miniconda.sh -b -p $HOME/miniconda
+  - export PATH="$HOME/miniconda/bin:$PATH"
+  - conda config --set always_yes yes --set changeps1 no
+  - conda update conda
+  - conda info
+
+  # Install dependencies
+  - conda env create --file="${ENV_FILE}"
+  - conda activate basmati_env
+#  - if [ "$DEV" ]; then pip install git+https://github.com/pydata/pandas.git; fi
+#  - if [ "$DEV" ]; then pip install git+https://github.com/matplotlib/matplotlib.git; fi
+#  - if [ "$STYLE" ]; then pip install black flake8; fi
+  - pip install -e .
+  - conda list
+  - python -c "import basmati; basmati.get_version();"
+
+# script:
+#   - py.test geopandas --cov geopandas -v --cov-report term-missing
+#   - if [ "$STYLE" ]; then black --check geopandas; fi
+#   - if [ "$STYLE" ]; then flake8 geopandas; fi
+# 
+# after_success:
+#   - codecov
+# 
