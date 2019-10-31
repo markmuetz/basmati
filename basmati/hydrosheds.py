@@ -16,11 +16,15 @@ HYDROSHEDS_DEM_FILE_TPL = '{region}_dem_{resolution}.bil'
 
 def load_hydrobasins_geodataframe(hydrosheds_dir, region, levels=range(1, 7),
                                   hydrobasins_file_tpl=HYDROBASINS_FILE_TPL):
+    if not Path(hydrosheds_dir).exists():
+        raise OSError(f'{hydrosheds_dir} does not exist')
     crss = []
     gdfs = []
     for level in levels:
         filename = hydrobasins_file_tpl.format(region=region, level=level)
         filepath = Path(hydrosheds_dir, filename)
+        if not filepath.exists():
+            raise OSError(f'{filepath} does not exist')
         logger.debug(f'Loading hydrobasins region: {region}; level: {level}; {filepath}')
         gdf = gpd.read_file(str(filepath))
         crss.append(gdf.crs)
@@ -58,8 +62,6 @@ def load_hydrosheds_dem(hydrosheds_dir, region, resolution='30s',
     return bounds, affine_tx, dem, mask
 
 
-# Added to the GeoDataFrame class using:
-# https://stackoverflow.com/a/53630084/54557
 def _find_downstream(gdf, start_basin_pfaf_id):
     """Find all downstream basins at the same level as the start basin"""
     assert isinstance(gdf, gpd.GeoDataFrame)
@@ -144,9 +146,10 @@ def _area_select(gdf, min_area, max_area):
     return gdf.loc[good_index]
 
 
+# Added to the GeoDataFrame class using:
+# https://stackoverflow.com/a/53630084/54557
 PandasObject.find_downstream = _find_downstream
 PandasObject.find_upstream = _find_upstream
 PandasObject.find_next_larger = _find_next_larger
 PandasObject.find_next_smaller = _find_next_smaller
 PandasObject.area_select = _area_select
-
