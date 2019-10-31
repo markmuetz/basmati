@@ -1,5 +1,5 @@
-import os
 import logging
+import os
 from pathlib import Path
 
 from basmati import BasmatiError
@@ -10,7 +10,7 @@ from basmati.demo.raster_dem_basin_overlay_4349 import basin_overlay_4349
 logger = logging.getLogger(__name__)
 
 
-def usage_message(logger):
+def _usage_message() -> None:
     logger.info('You can use the following commands to download the data:')
     print('basmati download -d hydrosheds_dem_30s -r as')
     print('basmati download -d hydrobasins_all_levels -r as')
@@ -32,7 +32,12 @@ def usage_message(logger):
     logger.info('export HYDROSHEDS_DIR=/home/user/HydroSHEDS')
 
 
-def demo_main():
+def demo_main() -> None:
+    """Entry point for running basmati demo.
+
+    Relies on HYDROSHEDS_DIR env var being set.
+    :raises: BasmatiError if HYDROSHEDS_DIR not set
+    """
     logger.info('Running BASMATI demo')
     logger.info('====================')
 
@@ -41,7 +46,7 @@ def demo_main():
         logger.error(msg)
         logger.info('Set this variable to the HydroSHEDS data directory')
         logger.info('')
-        usage_message(logger)
+        _usage_message()
         raise BasmatiError(msg)
 
     figsdir = Path('basmati_demo_figs')
@@ -55,7 +60,7 @@ def demo_main():
         basin_overlay_4349()
     except Exception as e:
         logger.error(e)
-        usage_message(logger)
+        _usage_message()
         return
 
     logger.info('=============================')

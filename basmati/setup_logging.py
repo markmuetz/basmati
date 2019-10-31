@@ -1,19 +1,20 @@
+import logging
 import os
 import sys
-import logging
+from typing import Union
 
-from basmati.bcolors import bcolors
+from basmati.bcolors import Bcolors
 
 
 # Thanks: # http://stackoverflow.com/a/8349076/54557
 class ColourConsoleFormatter(logging.Formatter):
     """Format messages in colour based on their level"""
-    dbg_fmt = '%(asctime)s: ' +  bcolors.OKBLUE + '%(levelname)-8s' + bcolors.ENDC + ': %(message)s'
-    info_fmt = '%(asctime)s: ' + bcolors.OKGREEN + '%(levelname)-8s' + bcolors.ENDC + ': %(message)s'
-    file_fmt = '%(asctime)s: ' + bcolors.HEADER + '%(levelname)-8s' + bcolors.ENDC + ': %(message)s'
-    warn_fmt = '%(asctime)s: ' + bcolors.WARNING + '%(levelname)-8s' + bcolors.ENDC + ': %(message)s'
-    err_fmt = ('%(asctime)s: ' + bcolors.FAIL + '%(levelname)-8s' + bcolors.ENDC + 
-               bcolors.BOLD + ': %(message)s' + bcolors.ENDC)
+    dbg_fmt = '%(asctime)s: ' +  Bcolors.OKBLUE + '%(levelname)-8s' + Bcolors.ENDC + ': %(message)s'
+    info_fmt = '%(asctime)s: ' + Bcolors.OKGREEN + '%(levelname)-8s' + Bcolors.ENDC + ': %(message)s'
+    file_fmt = '%(asctime)s: ' + Bcolors.HEADER + '%(levelname)-8s' + Bcolors.ENDC + ': %(message)s'
+    warn_fmt = '%(asctime)s: ' + Bcolors.WARNING + '%(levelname)-8s' + Bcolors.ENDC + ': %(message)s'
+    err_fmt = ('%(asctime)s: ' + Bcolors.FAIL + '%(levelname)-8s' + Bcolors.ENDC +
+               Bcolors.BOLD + ': %(message)s' + Bcolors.ENDC)
  
     def __init__(self, fmt="%(levelno)s: %(msg)s"):
         logging.Formatter.__init__(self, fmt, '%H:%M:%S')
@@ -38,7 +39,13 @@ class ColourConsoleFormatter(logging.Formatter):
         return result
  
  
-def add_file_logging(logging_filename, root=True):
+def add_file_logging(logging_filename: str) -> None:
+    """Add file logging to basmati logger.
+
+    Idempotent.
+
+    :param logging_filename: file to output logging to.
+    """
     basmati_logger = logging.getLogger('basmati')
 
     if getattr(basmati_logger, 'has_file_logging', False):
@@ -52,11 +59,20 @@ def add_file_logging(logging_filename, root=True):
         fileHandler.setLevel(logging.DEBUG)
 
         basmati_logger.addHandler(fileHandler)
-        if root:
-            basmati_logger.has_file_logging = True
 
 
-def setup_logger(level=logging.INFO, colour=True, warn_stderr=False):
+def setup_logger(level: Union[str, int] = logging.INFO,
+                 colour: bool = True, warn_stderr: bool = False) -> logging.Logger:
+    """Configure a basmati logger.
+
+    Only do once (i.e. can call repeatedly and it will not change - idempotent).
+    Uses only a StreamHandler - only logs to console.
+
+    :param level: logging level
+    :param colour: use colour logs in console output
+    :param warn_stderr: warn and higher in stderr
+    :return: configured basmati logger
+    """
     '''Gets a logger. Sets up root logger ('basmati') if nec.'''
     basmati_logger = logging.getLogger('basmati')
 
@@ -65,19 +81,19 @@ def setup_logger(level=logging.INFO, colour=True, warn_stderr=False):
         basmati_logger.debug('Root logger already setup')
     else:
         fmt = '%(asctime)s: %(levelname)-8s: %(message)s'
-        if colour:
-            console_formatter = ColourConsoleFormatter(fmt)
-        else:
+        if not colour:
             console_formatter = logging.Formatter(fmt)
+        else:
+            console_formatter = ColourConsoleFormatter(fmt)
 
         if isinstance(level, str):
-            level = getattr(logging, level)
+            loglevel: int = getattr(logging, level)
         envlevel = os.getenv('BASMATI_LOGLEVEL', None)
         if envlevel:
-            envlevel = getattr(logging, envlevel)
-            level = min(envlevel, level)
+            envloglevel = getattr(logging, envlevel)
+            loglevel = min(envloglevel, loglevel)
 
-        basmati_logger.setLevel(level)
+        basmati_logger.setLevel(loglevel)
 
         stdoutStreamHandler = logging.StreamHandler(sys.stdout)
         stdoutStreamHandler.setFormatter(console_formatter)
@@ -89,6 +105,6 @@ def setup_logger(level=logging.INFO, colour=True, warn_stderr=False):
             stderrStreamHandler.setLevel(logging.WARNING)
             basmati_logger.addHandler(stderrStreamHandler)
 
-        basmati_logger.is_setup = True
+        setattr(basmati_logger, 'is_setup', True)
 
     return basmati_logger

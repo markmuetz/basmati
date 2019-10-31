@@ -1,13 +1,14 @@
 import argparse
+from typing import List
 
-from basmati.setup_logging import setup_logger
-from basmati.basmati_errors import BasmatiError
 from basmati.basmati_demo import demo_main
+from basmati.basmati_errors import BasmatiError
 from basmati.downloader import download_main, DATASETS, HYDROBASINS_REGIONS
+from basmati.setup_logging import setup_logger
 from basmati.version import get_version
 
 
-def _parse_args(argv):
+def _parse_args(argv: List[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description='BASMATI command line tool')
 
     # Top-level arguments.
@@ -45,7 +46,7 @@ def _parse_args(argv):
     return args
 
 
-def basmati_cmd(argv, import_log_msg=None):
+def basmati_cmd(argv: List[str], import_log_msg: str = None) -> None:
     args = _parse_args(argv)
     loglevel = 'DEBUG' if args.debug else 'INFO'
 

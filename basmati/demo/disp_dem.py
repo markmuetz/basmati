@@ -1,13 +1,13 @@
 # coding: utf-8
-import os
 import logging
+import os
 
-import numpy as np
 import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
+import numpy as np
 
-from basmati.utils import coarse_grain2d
 from basmati.hydrosheds import load_hydrosheds_dem
+from basmati.utils import coarse_grain2d
 
 logger = logging.getLogger(__name__)
 

@@ -1,12 +1,14 @@
 from logging import getLogger
 from pathlib import Path
-
-import numpy as np
-import pandas as pd
-from pandas.core.base import PandasObject
+from typing import Union, Iterable, Tuple, Set
 
 import geopandas as gpd
+import numpy as np
+import pandas as pd
 import rasterio
+from numpy import ndarray
+from pandas.core.base import PandasObject
+from rasterio.transform import Affine
 
 logger = getLogger('basmati.hydrosheds')
 
@@ -14,8 +16,9 @@ HYDROBASINS_FILE_TPL = 'hybas_{region}_lev{level:02}_v1c.shp'
 HYDROSHEDS_DEM_FILE_TPL = '{region}_dem_{resolution}.bil'
 
 
-def load_hydrobasins_geodataframe(hydrosheds_dir, region, levels=range(1, 7),
-                                  hydrobasins_file_tpl=HYDROBASINS_FILE_TPL):
+def load_hydrobasins_geodataframe(hydrosheds_dir: Union[str, Path], region: str,
+                                  levels: Iterable = range(1, 7),
+                                  hydrobasins_file_tpl: str = HYDROBASINS_FILE_TPL) -> gpd.GeoDataFrame:
     if not Path(hydrosheds_dir).exists():
         raise OSError(f'{hydrosheds_dir} does not exist')
     crss = []
@@ -47,8 +50,9 @@ def load_hydrobasins_geodataframe(hydrosheds_dir, region, levels=range(1, 7),
     return gdf
 
 
-def load_hydrosheds_dem(hydrosheds_dir, region, resolution='30s',
-                        hydrosheds_dem_file_tpl=HYDROSHEDS_DEM_FILE_TPL):
+def load_hydrosheds_dem(hydrosheds_dir: Union[str, Path], region: str, resolution: str = '30s',
+                        hydrosheds_dem_file_tpl: str = HYDROSHEDS_DEM_FILE_TPL) -> Tuple[ndarray, Affine,
+                                                                                         ndarray, ndarray]:
     filename = hydrosheds_dem_file_tpl.format(region=region, resolution=resolution)
     logger.debug(f'Loading hydrosheds DEM region: {region}; resolution: {resolution}; {filename}')
     with rasterio.open(Path(hydrosheds_dir, filename)) as dem_buf:
@@ -62,8 +66,39 @@ def load_hydrosheds_dem(hydrosheds_dir, region, resolution='30s',
     return bounds, affine_tx, dem, mask
 
 
-def _find_downstream(gdf, start_basin_pfaf_id):
-    """Find all downstream basins at the same level as the start basin"""
+def is_downstream(pfaf_id_a: Union[int, str], pfaf_id_b: Union[int, str]) -> bool:
+    """Calculate if pfaf_id_b is downstream of pfaf_id_a
+
+    Implemented as in https://en.wikipedia.org/wiki/Pfafstetter_Coding_System#Properties
+
+    :param pfaf_id_a: first Pfafstetter id (upstream)
+    :param pfaf_id_b: second Pfafstetter id (downstream)
+    :return: `True` if pfaf_id_b is downstream of pfaf_id_a, `False` otherwise or if a == b
+    """
+    if str(pfaf_id_a) == str(pfaf_id_b):
+        # Basin is not downstream of itself.
+        return False
+    n = 0
+    for c1, c2 in zip(str(pfaf_id_a), str(pfaf_id_b)):
+        if c1 == c2:
+            n += 1
+        else:
+            break
+    if int(str(pfaf_id_b)[n:]) < int(str(pfaf_id_a)[n:]):
+        for d in [int(c) for c in str(pfaf_id_b)[n:]]:
+            if d % 2 == 0:
+                return False
+        return True
+    return False
+
+
+def _find_downstream(gdf: gpd.GeoDataFrame, start_basin_pfaf_id: int) -> gpd.GeoDataFrame:
+    """Find all downstream basins at the same level as the start basin.
+
+    :param gdf: hydrobasins geodataframe to traverse.
+    :param start_basin_pfaf_id: Pfafstetter id of start basin.
+    :return: filtered geodataframe at level of start basin based on which basins are downstream of start basin.
+    """
     assert isinstance(gdf, gpd.GeoDataFrame)
     start_row = gdf[gdf.PFAF_ID == start_basin_pfaf_id].iloc[0]
     gdf_lev = gdf[gdf.LEVEL == start_row.LEVEL]
@@ -83,7 +118,7 @@ def _find_downstream(gdf, start_basin_pfaf_id):
     return gdf_lev[downstream]
 
 
-def _find_upstream(gdf, start_basin_pfaf_id):
+def _find_upstream(gdf: gpd.GeoDataFrame, start_basin_pfaf_id: int) -> gpd.GeoDataFrame:
     assert isinstance(gdf, gpd.GeoDataFrame)
     start_row = gdf[gdf.PFAF_ID == start_basin_pfaf_id].iloc[0]
     gdf_lev = gdf[gdf.LEVEL == start_row.LEVEL]
@@ -99,21 +134,21 @@ def _find_upstream(gdf, start_basin_pfaf_id):
     return gdf_lev[all_hops > 0]
 
 
-def _find_next_larger(gdf, start_basin_pfaf_id):
+def _find_next_larger(gdf: gpd.GeoDataFrame, start_basin_pfaf_id: int) -> gpd.GeoDataFrame:
     assert isinstance(gdf, gpd.GeoDataFrame)
     larger_gdf = gdf[gdf.PFAF_STR == str(start_basin_pfaf_id)[:-1]]
     assert len(larger_gdf) <= 1  # can be zero.
     return larger_gdf
 
 
-def _find_next_smaller(gdf, start_basin_pfaf_id):
+def _find_next_smaller(gdf: gpd.GeoDataFrame, start_basin_pfaf_id: int) -> gpd.GeoDataFrame:
     assert isinstance(gdf, gpd.GeoDataFrame)
     start_row = gdf[gdf.PFAF_ID == start_basin_pfaf_id].iloc[0]
     return gdf[gdf.PFAF_STR.str.startswith(str(start_basin_pfaf_id)) & (gdf.LEVEL == start_row.LEVEL + 1)]
 
 
-def _area_select(gdf, min_area, max_area):
-    all_good_index = set()
+def _area_select(gdf: gpd.GeoDataFrame, min_area: float, max_area: float) -> gpd.GeoDataFrame:
+    all_good_index: Set[int] = set()
     good_index = set()
 
     for level in range(gdf.LEVEL.min(), gdf.LEVEL.max() + 1):
@@ -136,7 +171,7 @@ def _area_select(gdf, min_area, max_area):
             row_index = gdf_lev.index[irow_index]
             row = gdf_lev.iloc[irow_index]
             
-            if row.SUB_AREA < max_area and row.SUB_AREA > min_area:
+            if max_area > row.SUB_AREA > min_area:
                 larger_basin = gdf.find_next_larger(row.PFAF_ID)
                 larger_basin_index = larger_basin.index[0] if len(larger_basin) else -1
                 if larger_basin_index not in all_good_index:

@@ -1,8 +1,9 @@
+import itertools
 import os
+import zipfile
 from logging import getLogger
 from pathlib import Path
-import itertools
-import zipfile
+from typing import Union
 
 from basmati.basmati_errors import BasmatiError
 from basmati.utils import sysrun
@@ -52,21 +53,38 @@ HYDROSHEDS_URLS = {
 }
 
 
-def download_file_wget(basedir, url, filename):
-    filename = basedir / filename
-    if filename.exists():
-        raise BasmatiError(f'{filename} already exists')
-    cmd = f'wget {url} -O {filename}'
+def download_file_wget(url: str, basedir: Path, filename: Path) -> Path:
+    """Downloads a file from a given URL to the desired basedir / filename.
+
+    Uses wget and system command because requests cannot resolve the redirects of the
+    stable dropbox links used by HydroSHEDS.
+    See here for the base Dropbox directory:
+    https://www.dropbox.com/sh/hmpwobbz9qixxpe/AAAI_jasMJPZl_6wX6d3vEOla?dl=0
+
+    :param url: URL where file can be downloaded
+    :param basedir: directory to download to
+    :param filename: filename of file to download
+    :return: filepath of downloaded file
+    """
+    filepath = basedir / filename
+    if filepath.exists():
+        raise BasmatiError(f'{filepath} already exists')
+    cmd = f'wget {url} -O {filepath}'
     logger.debug(cmd)
     resp = sysrun(cmd)
     logger.debug(resp)
     logger.debug(resp.stdout)
 
-    return filename
+    return filepath
 
 
-def unzip_file(basedir, filename):
-    with zipfile.ZipFile(filename, 'r') as zip_ref:
+def unzip_file(basedir: Path, zipfilepath: Path) -> None:
+    """Completely extract a zip file to a given basedir
+
+    :param basedir: directory to extract to
+    :param zipfilepath: path to zipfile
+    """
+    with zipfile.ZipFile(zipfilepath, 'r') as zip_ref:
         zip_ref.extractall(str(basedir))
 
 
@@ -75,23 +93,35 @@ class UnrecognizedRegionError(BasmatiError):
 
 
 class HydroshedsDownloader:
+    """Downloads and unzips HydroSHEDS dataset files from Dropbox
+    """
     # N.B. more restrictive than HYDROBASINS_REGIONS
     hydrosheds_30s_regions = ['af', 'ar', 'as', 'au', 'eu', 'na', 'sa']
 
-    def __init__(self, hydrosheds_dir, delete_zip):
+    def __init__(self, hydrosheds_dir: Union[str, Path], delete_zip: bool) -> None:
+        """Creates instance to download data to a given hydrosheds_dir.
+
+        :param hydrosheds_dir: directory to download data to - must exist
+        :raises: BasmatiError if hydrosheds_dir does not exist
+        :param delete_zip: delete zipfiles after download and extract
+        """
         self.hydrosheds_dir = Path(hydrosheds_dir)
         self.delete_zip = delete_zip
         if not self.hydrosheds_dir.exists():
             raise BasmatiError(f'{self.hydrosheds_dir} does not exist')
 
-    def _unzip_file(self, filename):
+    def _unzip_file(self, filename: Path) -> None:
         logger.info(f'Unzipping {filename}')
         unzip_file(self.hydrosheds_dir, filename)
         if self.delete_zip:
             logger.info(f'Deleting {filename}')
             filename.unlink()
 
-    def download_hydrosheds_dem_30s(self, region):
+    def download_hydrosheds_dem_30s(self, region: str) -> None:
+        """Download 30s Digital Elevation Model for region.
+
+        :param region: region to download DEM for
+        """
         if region not in self.hydrosheds_30s_regions:
             msg = (f'Unrecognized region: {region}, must be one of:'
                    f'{", ".join(self.hydrosheds_30s_regions)}')
@@ -99,13 +129,17 @@ class HydroshedsDownloader:
 
         url, filename = HYDROSHEDS_URLS['hydrosheds_dem_30s'][region]
         logger.info(f'Downloading from {url}')
-        filename = download_file_wget(self.hydrosheds_dir, url, filename)
-        logger.info(f'Downloaded {filename}')
+        filepath = download_file_wget(url, self.hydrosheds_dir, Path(filename))
+        logger.info(f'Downloaded {filepath}')
 
-        if filename.suffix == '.zip':
-            self._unzip_file(filename)
+        if filepath.suffix == '.zip':
+            self._unzip_file(filepath)
 
-    def download_hydrobasins_all_levels(self, region):
+    def download_hydrobasins_all_levels(self, region: str) -> None:
+        """Download HydroBASINS dataset, levels 1-12.
+
+        :param region: region to download dataset for
+        """
         if region not in HYDROBASINS_REGIONS:
             msg = (f'Unrecognized region: {region}, must be one of:'
                    f'{", ".join(self.hydrosheds_30s_regions)}')
@@ -113,14 +147,27 @@ class HydroshedsDownloader:
 
         url, filename = HYDROSHEDS_URLS['hydrobasins_all_levels'][region]
         logger.info(f'Downloading from {url}')
-        filename = download_file_wget(self.hydrosheds_dir, url, filename)
-        logger.info(f'Downloaded {filename}')
+        filepath = download_file_wget(url, self.hydrosheds_dir, Path(filename))
+        logger.info(f'Downloaded {filepath}')
 
-        if filename.suffix == '.zip':
-            self._unzip_file(filename)
+        if filepath.suffix == '.zip':
+            self._unzip_file(filepath)
 
 
-def download_main(dataset, region, delete_zip):
+def download_main(dataset: str, region: str, delete_zip: bool) -> None:
+    """Entry point for downloading HydroSHEDS datasets for the given region
+
+    Relies on HYDROSHEDS_DIR env var being set.
+
+    e.g.:
+    $ basmati download -d <dataset> -r <region>
+
+    :raises: BasmatiError if HYDROSHEDS_DIR not set
+    :raises: BasmatiError region or dataset not recognized
+    :param dataset: HydroSHEDS dataset to download
+    :param region: 2 character region code
+    :param delete_zip: delete downloaded zipfiles after extract
+    """
     hydrosheds_dir = os.getenv('HYDROSHEDS_DIR')
     if not hydrosheds_dir:
         msg = 'env var HYDROSHEDS_DIR not set'
@@ -139,12 +186,12 @@ def download_main(dataset, region, delete_zip):
         logger.error(msg)
         raise BasmatiError(msg)
 
-    hydrosheds_dir = Path(hydrosheds_dir)
-    if not hydrosheds_dir.exists():
-        logger.info(f'Creating {hydrosheds_dir}')
-        hydrosheds_dir.mkdir(parents=True)
+    hydrosheds_dirpath = Path(hydrosheds_dir)
+    if not hydrosheds_dirpath.exists():
+        logger.info(f'Creating {hydrosheds_dirpath}')
+        hydrosheds_dirpath.mkdir(parents=True)
 
-    downloader = HydroshedsDownloader(hydrosheds_dir, delete_zip)
+    downloader = HydroshedsDownloader(hydrosheds_dirpath, delete_zip)
     if dataset == 'ALL':
         datasets = DATASETS[1:]
     else:

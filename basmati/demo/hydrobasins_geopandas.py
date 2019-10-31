@@ -1,12 +1,11 @@
 # coding: utf-8
-import os
 import logging
+import os
 from pathlib import Path
 
-import pandas as pd
-
-import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
+import matplotlib.pyplot as plt
+import pandas as pd
 
 from basmati.hydrosheds import load_hydrobasins_geodataframe
 

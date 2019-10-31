@@ -1,5 +1,6 @@
 import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
+import numpy as np
 
 
 def plot_raster_with_coast(title, extent, raster, mask=None, reverse_y=False):

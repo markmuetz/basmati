@@ -1,8 +1,8 @@
-import os
 import logging
+import os
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 
 from basmati.hydrosheds import load_hydrobasins_geodataframe, load_hydrosheds_dem
 from basmati.utils import build_raster_from_geometries

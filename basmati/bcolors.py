@@ -1,5 +1,5 @@
 # Thanks: http://stackoverflow.com/a/287944/54557
-class bcolors:
+class Bcolors:
     HEADER = '\033[95m'
     OKBLUE = '\033[94m'
     OKGREEN = '\033[92m'
@@ -13,6 +13,6 @@ class bcolors:
     def print(msg, styles=[]):
         colour_style = []
         for style in styles:
-            colour_style.append(getattr(bcolors, style.upper()))
+            colour_style.append(getattr(Bcolors, style.upper()))
         colour_style = ''.join(colour_style)
-        print(colour_style + str(msg) + bcolors.ENDC)
+        print(colour_style + str(msg) + Bcolors.ENDC)

@@ -39,7 +39,7 @@ setup(
         'geopandas',
         'rasterio',
         'matplotlib',
-        'configparser',
+        'configparser', 'shapely'
         # 'iris',
         ],
     extras_require={

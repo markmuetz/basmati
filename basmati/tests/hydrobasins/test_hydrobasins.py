@@ -1,13 +1,34 @@
-import os
-import tempfile
 from pathlib import Path
 from unittest import TestCase
 
-from mock import patch, call
-
-from basmati.hydrosheds import load_hydrobasins_geodataframe
+from basmati.hydrosheds import load_hydrobasins_geodataframe, is_downstream
 
 HYDROSHEDS_DIR = Path('~/HydroSHEDS').expanduser()
+
+
+def test_is_downstream():
+    for pfaf_id_a, pfaf_id_b, expected_res in [
+        # https://en.wikipedia.org/wiki/Pfafstetter_Coding_System#Properties
+        (8835, 8833, True),
+        (8835, 8811, True),
+        (8835, 8832, False),
+        (8835, 8821, False),
+        (8835, 9135, False),
+        # Other.
+        (9, 7, True),
+        (99, 77, True),
+        (9, 8, False),
+        (89, 81, True),
+        # Check str OK.
+        ('89', 81, True),
+        (89, '81', True),
+        ('89', '81', True),
+    ]:
+        yield check_is_downstream, pfaf_id_a, pfaf_id_b, expected_res
+
+
+def check_is_downstream(pfaf_id_a, pfaf_id_b, expected_res):
+    assert is_downstream(pfaf_id_a, pfaf_id_b) == expected_res
 
 
 class TestHydrobasinsLoad(TestCase):

@@ -5,8 +5,8 @@ from unittest import TestCase
 
 from mock import patch
 
-from basmati.basmati_errors import BasmatiError
 from basmati.basmati_demo import demo_main
+from basmati.basmati_errors import BasmatiError
 
 HYDROSHEDS_DIR = Path('~/HydroSHEDS').expanduser()
 

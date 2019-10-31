@@ -1,15 +1,21 @@
 VERSION = (0, 2, 0, 0, 'alpha')
 
 
-def get_version(version=VERSION, form='short'):
+def get_version(form: str = 'short') -> str:
+    """Get BASMATI version
+
+    :param form: one of short, medium or long
+    :raises: ValueError if form unrecognized
+    :return: basmati version in desired form
+    """
     if form == 'short':
-        return '.'.join([str(v) for v in version[:3]])
+        return '.'.join([str(v) for v in VERSION[:3]])
     elif form == 'medium':
-        return '.'.join([str(v) for v in version][:4])
+        return '.'.join([str(v) for v in VERSION][:4])
     elif form == 'long':
-        return '.'.join([str(v) for v in version][:4]) + '-' + version[4]
+        return '.'.join([str(v) for v in VERSION][:4]) + '-' + VERSION[4]
     else:
-        raise ValueError('unrecognised form specifier: {0}'.format(form))
+        raise ValueError('unrecognized form specifier: {0}'.format(form))
 
 
 __version__ = get_version()
