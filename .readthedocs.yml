@@ -10,5 +10,5 @@ python:
     - method: pip
       path: .
 
-# conda:
-#     environment: envs/basmati_env.yml
+conda:
+    environment: docs/environment.yml
