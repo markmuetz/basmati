@@ -21,9 +21,8 @@ project = 'basmati'
 copyright = '2019, Mark Muetzelfeldt'
 author = 'Mark Muetzelfeldt'
 
-from basmati import version
-
-version = version.get_version('short')
+# from basmati import version
+# version = version.get_version('short')
 
 
 # -- General configuration ---------------------------------------------------
