@@ -20,4 +20,8 @@ docs/_build/
 
 # PyCharm
 .idea
-/.mypy_cache/
+.mypy_cache/
+
+# Doc
+_build/
+
