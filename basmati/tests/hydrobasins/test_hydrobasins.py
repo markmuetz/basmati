@@ -73,7 +73,7 @@ class TestHydrobasinsOperations(TestCase):
         """Methods added to geodataframe by load"""
         assert hasattr(self.gdf, 'find_downstream')
         assert hasattr(self.gdf, 'find_upstream')
-        assert hasattr(self.gdf, 'find_next_smaller')
-        assert hasattr(self.gdf, 'find_next_larger')
+        assert hasattr(self.gdf, 'find_next_level_smaller')
+        assert hasattr(self.gdf, 'find_next_level_larger')
         assert hasattr(self.gdf, 'area_select')
 
