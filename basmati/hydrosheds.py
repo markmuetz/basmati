@@ -19,6 +19,14 @@ HYDROSHEDS_DEM_FILE_TPL = '{region}_dem_{resolution}.bil'
 def load_hydrobasins_geodataframe(hydrosheds_dir: Union[str, Path], region: str,
                                   levels: Iterable = range(1, 7),
                                   hydrobasins_file_tpl: str = HYDROBASINS_FILE_TPL) -> gpd.GeoDataFrame:
+    """Load all data for the desired region and levels.
+
+    :param hydrosheds_dir: directory of HydroSHEDS datasets
+    :param region: 2 character region code
+    :param levels: Pfafstetter levels to load
+    :param hydrobasins_file_tpl: filename template
+    :return: geodataframe containing all the data for the desired region and levels
+    """
     if not Path(hydrosheds_dir).exists():
         raise OSError(f'{hydrosheds_dir} does not exist')
     crss = []
@@ -53,6 +61,14 @@ def load_hydrobasins_geodataframe(hydrosheds_dir: Union[str, Path], region: str,
 def load_hydrosheds_dem(hydrosheds_dir: Union[str, Path], region: str, resolution: str = '30s',
                         hydrosheds_dem_file_tpl: str = HYDROSHEDS_DEM_FILE_TPL) -> Tuple[ndarray, Affine,
                                                                                          ndarray, ndarray]:
+    """Load a HydroSHEDS Digital Elevation Model (DEM).
+
+    :param hydrosheds_dir: directory of HydroSHEDS datasets
+    :param region: 2 character region code
+    :param resolution: resolution to load
+    :param hydrosheds_dem_file_tpl: filename template
+    :return: bounds, affine transform, DEM and mask of the DEM
+    """
     filename = hydrosheds_dem_file_tpl.format(region=region, resolution=resolution)
     logger.debug(f'Loading hydrosheds DEM region: {region}; resolution: {resolution}; {filename}')
     with rasterio.open(Path(hydrosheds_dir, filename)) as dem_buf:
@@ -70,6 +86,7 @@ def is_downstream(pfaf_id_a: Union[int, str], pfaf_id_b: Union[int, str]) -> boo
     """Calculate if pfaf_id_b is downstream of pfaf_id_a
 
     Implemented as in https://en.wikipedia.org/wiki/Pfafstetter_Coding_System#Properties
+    Works even if pfaf_id_a and pfaf_id_b are at different levels.
 
     :param pfaf_id_a: first Pfafstetter id (upstream)
     :param pfaf_id_b: second Pfafstetter id (downstream)
@@ -84,7 +101,12 @@ def is_downstream(pfaf_id_a: Union[int, str], pfaf_id_b: Union[int, str]) -> boo
             n += 1
         else:
             break
-    if int(str(pfaf_id_b)[n:]) < int(str(pfaf_id_a)[n:]):
+    # First n digits are the same.
+    # In case where b is shorter than a (e.g. b is level 1, a is level 2), only compare the matching digits up to
+    # the length of b.
+    min_len_a_b = min(len(str(pfaf_id_a)), len(str(pfaf_id_b)))
+    if int(str(pfaf_id_b)[n:min_len_a_b]) < int(str(pfaf_id_a)[n:min_len_a_b]):
+        # If any remaining digits in b are even it is not downstream.
         for d in [int(c) for c in str(pfaf_id_b)[n:]]:
             if d % 2 == 0:
                 return False
@@ -95,9 +117,12 @@ def is_downstream(pfaf_id_a: Union[int, str], pfaf_id_b: Union[int, str]) -> boo
 def _find_downstream(gdf: gpd.GeoDataFrame, start_basin_pfaf_id: int) -> gpd.GeoDataFrame:
     """Find all downstream basins at the same level as the start basin.
 
-    :param gdf: hydrobasins geodataframe to traverse.
-    :param start_basin_pfaf_id: Pfafstetter id of start basin.
-    :return: filtered geodataframe at level of start basin based on which basins are downstream of start basin.
+    Can also be used as a method on a `gpd.GeoDataFrame`:
+    `gdf.find_downstream(start_basin_pfaf_id)`
+
+    :param gdf: hydrobasins geodataframe to traverse
+    :param start_basin_pfaf_id: Pfafstetter id of start basin
+    :return: filtered geodataframe at level of start basin based on which basins are downstream of start basin
     """
     assert isinstance(gdf, gpd.GeoDataFrame)
     start_row = gdf[gdf.PFAF_ID == start_basin_pfaf_id].iloc[0]
@@ -119,6 +144,15 @@ def _find_downstream(gdf: gpd.GeoDataFrame, start_basin_pfaf_id: int) -> gpd.Geo
 
 
 def _find_upstream(gdf: gpd.GeoDataFrame, start_basin_pfaf_id: int) -> gpd.GeoDataFrame:
+    """Find all upstream basins at the same level as the start basin.
+
+    Can also be used as a method on a `gpd.GeoDataFrame`:
+    `gdf.find_upstream(start_basin_pfaf_id)`
+
+    :param gdf: hydrobasins geodataframe to traverse
+    :param start_basin_pfaf_id: Pfafstetter id of start basin
+    :return: filtered geodataframe at level of start basin based on which basins are upstream of start basin
+    """
     assert isinstance(gdf, gpd.GeoDataFrame)
     start_row = gdf[gdf.PFAF_ID == start_basin_pfaf_id].iloc[0]
     gdf_lev = gdf[gdf.LEVEL == start_row.LEVEL]
@@ -134,20 +168,59 @@ def _find_upstream(gdf: gpd.GeoDataFrame, start_basin_pfaf_id: int) -> gpd.GeoDa
     return gdf_lev[all_hops > 0]
 
 
-def _find_next_larger(gdf: gpd.GeoDataFrame, start_basin_pfaf_id: int) -> gpd.GeoDataFrame:
+def _find_next_level_larger(gdf: gpd.GeoDataFrame, start_basin_pfaf_id: int) -> gpd.GeoDataFrame:
+    """Find basin one level lower (i.e. found basin is larger).
+
+    if `start_basin_pfaf_id == 913`, will return basin 91.
+    Can return 0 or 1 basins.
+
+    Can also be used as a method on a `gpd.GeoDataFrame`:
+    `gdf.find_next_level_larger(start_basin_pfaf_id)`
+
+    :param gdf: hydrobasins geodataframe to traverse
+    :param start_basin_pfaf_id: Pfafstetter id of start basin
+    :return: filtered geodataframe with 0 or 1 basins at level lower
+    """
     assert isinstance(gdf, gpd.GeoDataFrame)
     larger_gdf = gdf[gdf.PFAF_STR == str(start_basin_pfaf_id)[:-1]]
     assert len(larger_gdf) <= 1  # can be zero.
     return larger_gdf
 
 
-def _find_next_smaller(gdf: gpd.GeoDataFrame, start_basin_pfaf_id: int) -> gpd.GeoDataFrame:
+def _find_next_level_smaller(gdf: gpd.GeoDataFrame, start_basin_pfaf_id: int) -> gpd.GeoDataFrame:
+    """Find basins one level higher (i.e. found basins are smaller).
+
+    if `start_basin_pfaf_id == 91`, will return basins 911, 912... 919.
+    Can return 0-9 basins.
+
+    Can also be used as a method on a `gpd.GeoDataFrame`:
+    `gdf.find_next_level_smaller(start_basin_pfaf_id)`
+
+    :param gdf: hydrobasins geodataframe to traverse
+    :param start_basin_pfaf_id: Pfafstetter id of start basin
+    :return: filtered geodataframe with 0-9 basins at level higher
+    """
     assert isinstance(gdf, gpd.GeoDataFrame)
     start_row = gdf[gdf.PFAF_ID == start_basin_pfaf_id].iloc[0]
     return gdf[gdf.PFAF_STR.str.startswith(str(start_basin_pfaf_id)) & (gdf.LEVEL == start_row.LEVEL + 1)]
 
 
 def _area_select(gdf: gpd.GeoDataFrame, min_area: float, max_area: float) -> gpd.GeoDataFrame:
+    """Select basins from lower to higher levels that are between min_area and max_area in area.
+
+    Start by working out if any basins at e.g. level 1 are selected.
+    Then move on to higher levels (smaller basins).
+    At each level, only add basins if the basin at the level below has not been added.
+    e.g. level 3 basins 411 to 419 will not be added if at level 2 basin 41 was added.
+
+    Can also be used as a method on a `gpd.GeoDataFrame`:
+    `gdf.area_select(min_area, max_area)`
+
+    :param gdf: hydrobasins geodataframe to traverse
+    :param min_area: minimum area of basin
+    :param max_area: maximum area of basin
+    :return: filtered geodataframe from any level (favouring lower levels) with area between min and max
+    """
     all_good_index: Set[int] = set()
     good_index = set()
 
@@ -185,6 +258,6 @@ def _area_select(gdf: gpd.GeoDataFrame, min_area: float, max_area: float) -> gpd
 # https://stackoverflow.com/a/53630084/54557
 PandasObject.find_downstream = _find_downstream
 PandasObject.find_upstream = _find_upstream
-PandasObject.find_next_larger = _find_next_larger
-PandasObject.find_next_smaller = _find_next_smaller
+PandasObject.find_next_level_larger = _find_next_level_larger
+PandasObject.find_next_level_smaller = _find_next_level_smaller
 PandasObject.area_select = _area_select

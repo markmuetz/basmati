@@ -12,9 +12,10 @@ def sysrun(cmd: str) -> sp.CompletedProcess:
     """Run a system command
 
     Gets all output (stdout and stderr).
-    To access output: sysrun(cmd).stdout
+    To access output: `sysrun(cmd).stdout`
+
     :param cmd: command to run
-    :raises: sp.CalledProcessError
+    :raises: `sp.CalledProcessError`
     :return: result of cmd
     """
     return sp.run(cmd, check=True, shell=True, stdout=sp.PIPE, stderr=sp.PIPE, encoding='utf8')
@@ -22,7 +23,7 @@ def sysrun(cmd: str) -> sp.CompletedProcess:
 
 def build_raster_from_geometries(geometries: Iterable[BaseGeometry],
                                  shape: Iterable[int], tx: Affine) -> np.ndarray:
-    """Build a 2D raster from the geometries (e.g. gdf.geometry)
+    """Build a 2D raster from the geometries (e.g. `gdf.geometry`)
 
     Each geometry is assigned an index, which increments by one for each geometry.
 

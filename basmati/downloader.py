@@ -89,7 +89,7 @@ def unzip_file(basedir: Path, zipfilepath: Path) -> None:
 
 
 class UnrecognizedRegionError(BasmatiError):
-    pass
+    """Region not one of the know 2-digit codes in `HYDROBASINS_REGIONS`"""
 
 
 class HydroshedsDownloader:

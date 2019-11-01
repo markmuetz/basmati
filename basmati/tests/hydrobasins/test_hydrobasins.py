@@ -15,10 +15,16 @@ def test_is_downstream():
         (8835, 8821, False),
         (8835, 9135, False),
         # Other.
-        (9, 7, True),
         (99, 77, True),
-        (9, 8, False),
         (89, 81, True),
+        (9, 7, True),
+        (9, 8, False),
+        # More digits upstream.
+        (99, 7, True),
+        (99, 8, False),
+        # More digits downstream.
+        (9, 77, True),
+        (9, 69, False),
         # Check str OK.
         ('89', 81, True),
         (89, '81', True),
@@ -28,6 +34,7 @@ def test_is_downstream():
 
 
 def check_is_downstream(pfaf_id_a, pfaf_id_b, expected_res):
+    print(f'{pfaf_id_b} is downstream of {pfaf_id_a}: {expected_res}')
     assert is_downstream(pfaf_id_a, pfaf_id_b) == expected_res
 
 

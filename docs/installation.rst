@@ -3,7 +3,7 @@
 Installation
 ============
 
-The recommended way to intall ``basmati`` is using `Anaconda <https://www.anaconda.com/distribution/>`_. ``basmati`` only works with ``python3.6`` or higher.
+The recommended way to install ``basmati`` is using `Anaconda <https://www.anaconda.com/distribution/>`_. ``basmati`` only works with ``python3.6`` or higher.
 
 Clone basmati repository
 ------------------------
