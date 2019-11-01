@@ -2,6 +2,8 @@ import logging
 import os
 from pathlib import Path
 
+import matplotlib as mpl
+mpl.use('Agg')  # noqa
 from basmati import BasmatiError
 from basmati.demo.disp_dem import disp_dem
 from basmati.demo.hydrobasins_geopandas import hydrobasins_geopandas
