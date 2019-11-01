@@ -108,7 +108,7 @@ def is_downstream(pfaf_id_a: Union[int, str], pfaf_id_b: Union[int, str]) -> boo
     if int(str(pfaf_id_b)[n:min_len_a_b]) < int(str(pfaf_id_a)[n:min_len_a_b]):
         # If any remaining digits in b are even it is not downstream.
         for d in [int(c) for c in str(pfaf_id_b)[n:]]:
-            if d % 2 == 0:
+            if d % 2 == 0 and d != 0:
                 return False
         return True
     return False
@@ -140,7 +140,8 @@ def _find_downstream(gdf: gpd.GeoDataFrame, start_basin_pfaf_id: int) -> gpd.Geo
         else:
             next_row = None
 
-    return gdf_lev[downstream]
+    # gdf_lev[downstream] includes start row: don't return it [:-1].
+    return gdf_lev[downstream].iloc[:-1]
 
 
 def _find_upstream(gdf: gpd.GeoDataFrame, start_basin_pfaf_id: int) -> gpd.GeoDataFrame:

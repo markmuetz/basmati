@@ -1,5 +1,6 @@
 from pathlib import Path
 from unittest import TestCase
+import random
 
 from basmati.hydrosheds import load_hydrobasins_geodataframe, is_downstream
 
@@ -29,6 +30,11 @@ def test_is_downstream():
         ('89', 81, True),
         (89, '81', True),
         ('89', '81', True),
+        # Check 0s.
+        (43199, 43100, True),
+        (43199, 43101, True),
+        (43199, 43102, False),
+        (43199, 43120, False),
     ]:
         yield check_is_downstream, pfaf_id_a, pfaf_id_b, expected_res
 
@@ -77,3 +83,49 @@ class TestHydrobasinsOperations(TestCase):
         assert hasattr(self.gdf, 'find_next_level_larger')
         assert hasattr(self.gdf, 'area_select')
 
+    def test2_hb_downstream(self):
+        id_dist_max = self.gdf['DIST_MAIN'].idxmax()
+        furthest = self.gdf.loc[id_dist_max]
+
+        downstream_of_furthest = self.gdf.find_downstream(furthest.PFAF_ID)
+        assert furthest.MAIN_BAS == downstream_of_furthest.iloc[0].HYBAS_ID
+
+        downstream_pfaf_ids = downstream_of_furthest.PFAF_ID.values
+        for downstream_pfaf_id in downstream_pfaf_ids:
+            assert is_downstream(furthest.PFAF_ID, downstream_pfaf_id)
+
+    def test3_hb_upstream(self):
+        id_dist_max = self.gdf['DIST_MAIN'].idxmax()
+        furthest = self.gdf.loc[id_dist_max]
+
+        coast = self.gdf.find_downstream(furthest.PFAF_ID).iloc[0]
+        upstream_of_coast = self.gdf.find_upstream(coast.PFAF_ID)
+        upstream_pfaf_ids = upstream_of_coast.PFAF_ID.values
+        for upstream_pfaf_id in upstream_pfaf_ids:
+            assert is_downstream(upstream_pfaf_id, coast.PFAF_ID)
+
+    def test4_hb_level_larger(self):
+        id_dist_max = self.gdf['DIST_MAIN'].idxmax()
+        furthest = self.gdf.loc[id_dist_max]
+        print(furthest.PFAF_ID)
+        curr_row = furthest
+        curr_level = furthest.LEVEL
+        while curr_level > 1:
+            curr_level -= 1
+            gdf_larger = self.gdf.find_next_level_larger(curr_row.PFAF_ID)
+            assert len(gdf_larger) == 1
+            row_larger = gdf_larger.iloc[0]
+            assert row_larger.LEVEL == curr_level
+            assert row_larger.PFAF_STR == curr_row.PFAF_STR[:-1]
+            curr_row = row_larger
+
+    def test5_hb_level_smaller(self):
+        curr_row = self.gdf[self.gdf.PFAF_ID == 4].iloc[0]
+        curr_level = 1
+        while curr_level < 6:
+            curr_level += 1
+            gdf_smaller = self.gdf.find_next_level_smaller(curr_row.PFAF_ID)
+            if not len(gdf_smaller):
+                break
+            assert (gdf_smaller.LEVEL.values == curr_level).all()
+            curr_row = gdf_smaller.iloc[random.randint(0, len(gdf_smaller) - 1)]
