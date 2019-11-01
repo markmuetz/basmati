@@ -21,8 +21,8 @@ project = 'basmati'
 copyright = '2019, Mark Muetzelfeldt'
 author = 'Mark Muetzelfeldt'
 
-# from basmati import version
-# version = version.get_version('short')
+from basmati import version
+version = version.get_version('short')
 
 
 # -- General configuration ---------------------------------------------------
@@ -31,7 +31,7 @@ author = 'Mark Muetzelfeldt'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    #'sphinx.ext.autodoc',
+    'sphinx.ext.autodoc',
     'sphinx_rtd_theme',
 ]
 

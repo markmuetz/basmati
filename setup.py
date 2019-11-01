@@ -39,11 +39,12 @@ setup(
         'geopandas',
         'rasterio',
         'matplotlib',
-        'configparser', 'shapely'
-        # 'iris',
+        'configparser', 
+        'shapely',
         ],
     extras_require={
         'testing': ['nose', 'mock'],
+        'analysis': ['iris'],
     },
     package_data={'basmati.demo': ['schiemann2018mean_supplementary_tableS1.csv']},
     url='https://github.com/markmuetz/basmati',

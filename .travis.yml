@@ -1,4 +1,3 @@
-# Copied from geopandas .travis.yml
 language: python
 python: 3.7
 
@@ -7,27 +6,33 @@ sudo: false
 matrix:
   include:
     - env: ENV_FILE="envs/basmati_env.yml"
+    - env: ENV_FILE="envs/basmati_env_minimal.yml"
 
 install:
+  # From: https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/use-conda-with-travis-ci.html#the-travis-yml-file
   # Install conda
   - wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
   - bash miniconda.sh -b -p $HOME/miniconda
-  - export PATH="$HOME/miniconda/bin:$PATH"
+  - source "$HOME/miniconda/etc/profile.d/conda.sh"
+  - hash -r
   - conda config --set always_yes yes --set changeps1 no
-  - conda update conda
-  - conda info
+  - conda update -q conda
+  # Useful for debugging any issues with conda
+  - conda info -a
 
   # Install dependencies
   - conda env create --file="${ENV_FILE}"
-  - source activate basmati_env
+  - conda activate basmati_env
   - pip install -e .
   - conda list
   - python -c "import basmati; print(basmati.__version__);"
-  - export HYDROSHEDS_DIR="$HOME/HydroSHEDS"
-  - basmati download -d ALL -r as
+  - basmati version
 
 script:
+  - export HYDROSHEDS_DIR="$HOME/HydroSHEDS"
+  - basmati download -d ALL -r as
   - nosetests basmati
+  - mypy -p basmati --ignore-missing-imports
 
 # 
 # after_success:

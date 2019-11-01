@@ -25,3 +25,6 @@ docs/_build/
 # Doc
 _build/
 
+# Coverage
+/.coverage
+/htmlcov

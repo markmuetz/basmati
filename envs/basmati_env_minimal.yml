@@ -1,0 +1,23 @@
+name: basmati_env_minimal
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - cartopy
+  - codecov
+  - coverage
+  - descartes
+  - geopandas
+  - matplotlib
+  - mock
+  - mypy
+  - nose
+  - numpy
+  - pip
+  - rasterio
+  - scipy
+  - shapely
+  - sphinx=2.2.1
+  - pip:
+    - configparser
+    - sphinx-rtd-theme==0.4.3
