@@ -23,6 +23,8 @@ install:
   - pip install -e .
   - conda list
   - python -c "import basmati; print(basmati.__version__);"
+  - export HYDROSHEDS_DIR="$HOME/HydroSHEDS"
+  - basmati download -d ALL -r as
 
 script:
   - nosetests basmati

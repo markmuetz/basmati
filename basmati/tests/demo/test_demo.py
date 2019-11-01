@@ -8,7 +8,7 @@ from mock import patch
 from basmati.basmati_demo import demo_main
 from basmati.basmati_errors import BasmatiError
 
-HYDROSHEDS_DIR = Path('~/HydroSHEDS').expanduser()
+HYDROSHEDS_DIR = Path(os.getenv('HYDROSHEDS_DIR'))
 
 
 class TestDemo(TestCase):
