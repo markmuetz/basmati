@@ -31,10 +31,8 @@ install:
 script:
   - export HYDROSHEDS_DIR="$HOME/HydroSHEDS"
   - basmati download -d ALL -r as
-  - nosetests basmati
+  - nosetests --with-coverage basmati
   - mypy -p basmati --ignore-missing-imports
 
-# 
-# after_success:
-#   - codecov
-# 
+after_success:
+  - codecov
