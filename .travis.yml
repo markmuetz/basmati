@@ -21,7 +21,7 @@ install:
   - conda info -a
 
   # Install dependencies
-  - conda env create --file="${ENV_FILE}"
+  - conda env create -n basmati_env --file="${ENV_FILE}"
   - conda activate basmati_env
   - pip install -e .
   - conda list

@@ -5,7 +5,7 @@ sphinx:
 formats: all
 
 conda:
-    environment: envs/basmati_env_minimal.yml
+    environment: envs/basmati_env_doc_full.yml
 python:
   version: 3.7
   install:
