@@ -36,4 +36,4 @@ Check it has worked
     >>> import basmati
     >>> print(basmati.__version__)
 
-See the :ref:`_quickstart` guide for what to try next.
+See the :ref:`quickstart` guide for what to try next.
