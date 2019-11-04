@@ -246,7 +246,7 @@ def _area_select(gdf: gpd.GeoDataFrame, min_area: float, max_area: float) -> gpd
             row = gdf_lev.iloc[irow_index]
             
             if max_area > row.SUB_AREA > min_area:
-                larger_basin = gdf.find_next_larger(row.PFAF_ID)
+                larger_basin = gdf.find_next_level_larger(row.PFAF_ID)
                 larger_basin_index = larger_basin.index[0] if len(larger_basin) else -1
                 if larger_basin_index not in all_good_index:
                     good_index.add(row_index)
