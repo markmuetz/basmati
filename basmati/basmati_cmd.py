@@ -8,7 +8,7 @@ from basmati.setup_logging import setup_logger
 from basmati.version import get_version
 
 
-def _parse_args(argv: List[str]) -> argparse.Namespace:
+def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description='BASMATI command line tool')
 
     # Top-level arguments.
@@ -23,15 +23,15 @@ def _parse_args(argv: List[str]) -> argparse.Namespace:
     demo_parser = subparsers.add_parser('demo', help='Run through BASMATI demo')
 
     # download
-    download_parser = subparsers.add_parser('download', aliases=['dl'], 
+    download_parser = subparsers.add_parser('download', aliases=['dl'],
                                             help='Download HydroSHEDS datasets')
-    download_parser.add_argument('--dataset', '-d', 
+    download_parser.add_argument('--dataset', '-d',
                                  required=True,
-                                 choices=DATASETS, 
+                                 choices=DATASETS,
                                  help='Dataset to download')
-    download_parser.add_argument('--region', '-r', 
+    download_parser.add_argument('--region', '-r',
                                  required=True,
-                                 choices=HYDROBASINS_REGIONS, 
+                                 choices=HYDROBASINS_REGIONS,
                                  help='Region to download')
     download_parser.add_argument('--delete-zip',
                                  action='store_true',
@@ -41,8 +41,12 @@ def _parse_args(argv: List[str]) -> argparse.Namespace:
     version_parser = subparsers.add_parser('version', help='Print BASMATI version')
     version_parser.add_argument('--long', '-l', action='store_true', help='long version')
 
-    args = parser.parse_args(argv[1:])
+    return parser
 
+
+def _parse_args(argv: List[str]) -> argparse.Namespace:
+    parser = _build_parser()
+    args = parser.parse_args(argv[1:])
     return args
 
 

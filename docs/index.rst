@@ -22,6 +22,7 @@ The code is available in the `basmati github repository <https://github.com/mark
     :maxdepth: 2
     :caption: Reference:
 
+    basmati_cli
     basmati_package
 
 
