@@ -14,10 +14,10 @@ dependencies:
   - bokeh=1.3.4=py37_0
   - boost-cpp=1.70.0=h8e57a91_2
   - bzip2=1.0.8=h516909a_1
-  - ca-certificates=2019.9.11=hecc5488_0
+  - ca-certificates=2019.11.28=hecc5488_0
   - cairo=1.16.0=hfb77d84_1002
   - cartopy=0.17.0=py37h4331854_1007
-  - certifi=2019.9.11=py37_0
+  - certifi=2019.11.28=py37_0
   - cf-units=2.1.3=py37hc1659b7_0
   - cffi=1.13.1=py37h8022711_0
   - cfitsio=3.470=hb60a0a2_2
@@ -27,6 +27,8 @@ dependencies:
   - click-plugins=1.1.1=py_0
   - cligj=0.5.0=py_0
   - cloudpickle=1.2.2=py_0
+  - codecov=2.0.15=py_1
+  - coverage=4.5.4=py37h516909a_0
   - cryptography=2.7=py37h72c5cf5_0
   - curl=7.65.3=hf8cf82a_0
   - cycler=0.10.0=py_2
@@ -60,7 +62,7 @@ dependencies:
   - idna=2.8=py37_1000
   - imagesize=1.1.0=py_0
   - ipdb=0.12.2=py_0
-  - ipython=7.9.0=py37h5ca1d4c_0
+  - ipython=7.10.0=py37h5ca1d4c_0
   - ipython_genutils=0.2.0=py_1
   - iris=2.2.1=py37_0
   - jedi=0.15.1=py37_0
@@ -72,7 +74,6 @@ dependencies:
   - krb5=1.16.3=h05b26f9_1001
   - libblas=3.8.0=14_openblas
   - libcblas=3.8.0=14_openblas
-  - libclang=9.0.0=hc9558a2_1
   - libcurl=7.65.3=hda55be3_0
   - libdap4=3.20.4=hd3bb157_0
   - libedit=3.1.20170329=hf8c457e_1001
@@ -83,7 +84,6 @@ dependencies:
   - libiconv=1.15=h516909a_1005
   - libkml=1.3.0=h4fcabce_1010
   - liblapack=3.8.0=14_openblas
-  - libllvm9=9.0.0=hc9558a2_2
   - libnetcdf=4.6.2=h303dfb8_1003
   - libopenblas=0.3.7=h6e990d7_2
   - libpng=1.6.37=hed695b0_0
@@ -95,7 +95,6 @@ dependencies:
   - libtiff=4.0.10=h57b8799_1003
   - libuuid=2.32.1=h14c3975_1000
   - libxcb=1.13=h14c3975_1002
-  - libxkbcommon=0.9.1=hebb1f50_0
   - libxml2=2.9.10=hee79883_0
   - locket=0.2.0=py_2
   - lz4-c=1.8.3=he1b5a44_1001
@@ -110,12 +109,10 @@ dependencies:
   - ncurses=6.1=hf484d3e_1002
   - netcdf4=1.5.1.2=py37h73a1b54_1
   - nose=1.3.7=py37_1002
-  - nspr=4.23=he1b5a44_0
-  - nss=3.47=he751ad9_0
   - numpy=1.17.3=py37h95a1406_0
   - olefile=0.46=py_0
   - openjpeg=2.3.1=h21c5421_1
-  - openssl=1.1.1c=h516909a_0
+  - openssl=1.1.1d=h516909a_0
   - owslib=0.18.0=py_0
   - packaging=19.2=py_0
   - pandas=0.25.2=py37hb3f55d8_0
@@ -179,7 +176,7 @@ dependencies:
   - tornado=6.0.3=py37h516909a_0
   - traitlets=4.3.3=py37_0
   - typed-ast=1.4.0=py37h516909a_0
-  - typing_extensions=3.7.4=py37_0
+  - typing_extensions=3.7.4.1=py37_0
   - tzcode=2019a=h516909a_1002
   - udunits2=2.2.27.6=h4e0c4b3_1001
   - urllib3=1.25.6=py37_0
