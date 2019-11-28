@@ -65,7 +65,7 @@ def basmati_cmd(argv: List[str], import_log_msg: str = None) -> None:
         # not passed into any subsequent functions.
         if args.subcmd_name == 'demo':
             demo_main()
-        elif args.subcmd_name == 'download':
+        elif args.subcmd_name in ['download', 'dl']:
             download_main(args.dataset, args.region, args.delete_zip)
         elif args.subcmd_name == 'version':
             print(get_version(form='long' if args.long else 'short'))
