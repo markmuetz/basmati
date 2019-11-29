@@ -28,9 +28,14 @@ setup(
         'basmati',
         'basmati.demo',
         ],
-    scripts=[
-        'bin/basmati',
-        ],
+    # scripts=[
+    #     'bin/basmati',
+    #     ],
+    entry_points={
+        'console_scripts': [
+            'basmati=basmati.basmati_cmd:basmati_cmd'
+        ]
+    },
     python_requires='>=3.6',
     install_requires=[
         'numpy',

@@ -1,4 +1,5 @@
 import argparse
+import sys
 from typing import List
 
 from basmati.basmati_demo import demo_main
@@ -16,7 +17,7 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument('--bw', '-B', help='Disable colour logging', action='store_true')
     parser.add_argument('--warn', '-W', help='Warn on stderr', action='store_true')
 
-    subparsers = parser.add_subparsers(dest='subcmd_name')
+    subparsers = parser.add_subparsers(dest='subcmd_name', required=True)
     # name of subparser ends up in subcmd_name -- use for command dispatch.
 
     # demo
@@ -50,12 +51,11 @@ def _parse_args(argv: List[str]) -> argparse.Namespace:
     return args
 
 
-def basmati_cmd(argv: List[str], import_log_msg: str = None) -> None:
+def basmati_cmd(argv: List[str] = sys.argv) -> None:
     args = _parse_args(argv)
     loglevel = 'DEBUG' if args.debug else 'INFO'
 
     logger = setup_logger(loglevel, not args.bw, args.warn)
-    logger.debug(import_log_msg)
     logger.debug(argv)
     logger.debug(args)
     
