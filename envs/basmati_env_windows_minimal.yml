@@ -1,0 +1,25 @@
+name: basmati_env_windows_minimal
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - cartopy
+  - codecov
+  - coverage
+  - descartes
+  - geopandas
+  # Required: see https://github.com/conda-forge/fiona-feedstock/issues/139#issuecomment-558952413
+  - libtiff=4.0.10
+  - matplotlib
+  - mock
+  - mypy
+  - nose
+  - numpy
+  - pip
+  - rasterio
+  - scipy
+  - shapely
+  - sphinx=2.2.1
+  - pip:
+      - configparser
+      - sphinx-rtd-theme==0.4.3

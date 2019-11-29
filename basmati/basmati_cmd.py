@@ -14,7 +14,8 @@ def _build_parser() -> argparse.ArgumentParser:
 
     # Top-level arguments.
     parser.add_argument('--debug', '-D', help='Enable debug logging', action='store_true')
-    parser.add_argument('--bw', '-B', help='Disable colour logging', action='store_true')
+    if not sys.platform.startswith('win'):
+        parser.add_argument('--bw', '-B', help='Disable colour logging', action='store_true')
     parser.add_argument('--warn', '-W', help='Warn on stderr', action='store_true')
 
     subparsers = parser.add_subparsers(dest='subcmd_name', required=True)
@@ -55,6 +56,8 @@ def basmati_cmd(argv: List[str] = sys.argv) -> None:
     args = _parse_args(argv)
     loglevel = 'DEBUG' if args.debug else 'INFO'
 
+    if sys.platform.startswith('win'):
+        args.bw = True
     logger = setup_logger(loglevel, not args.bw, args.warn)
     logger.debug(argv)
     logger.debug(args)
