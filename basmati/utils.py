@@ -38,7 +38,7 @@ def build_raster_from_geometries(geometries: Iterable[BaseGeometry],
             geom_raster = rasterize(zip(geom, [i + 1] * len(geom)), shape, transform=tx)
         else:
             geom_raster = rasterize(zip([geom], [i + 1]), shape, transform=tx)
-        assert raster[geom_raster != 0] == 0, 'overlapping geometries'
+        assert (raster[geom_raster != 0] == 0).all(), 'overlapping geometries'
         raster |= geom_raster
     return raster
 
