@@ -35,10 +35,11 @@ def build_raster_from_geometries(geometries: Iterable[BaseGeometry],
     raster = np.zeros(shape, dtype=int)
     for i, geom in enumerate(geometries):
         if geom.geom_type == 'MultiPolygon':
-            raster |= rasterize(zip(geom, [i + 1] * len(geom)), shape, transform=tx)
+            geom_raster = rasterize(zip(geom, [i + 1] * len(geom)), shape, transform=tx)
         else:
-            raster |= rasterize(zip([geom], [i + 1]), shape, transform=tx)
-            assert raster.max() <= i + 1, 'Overlapping geometries.'
+            geom_raster = rasterize(zip([geom], [i + 1]), shape, transform=tx)
+        assert raster[geom_raster != 0] == 0, 'overlapping geometries'
+        raster |= geom_raster
     return raster
 
 
