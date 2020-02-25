@@ -15,6 +15,7 @@ def read(fname):
     except:
         return ''
 
+
 setup(
     name='basmati',
     version=get_version(),
