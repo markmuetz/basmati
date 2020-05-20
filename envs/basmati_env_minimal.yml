@@ -8,6 +8,7 @@ dependencies:
   - coverage
   - descartes
   - geopandas
+  - iris
   - matplotlib
   - mock
   - mypy

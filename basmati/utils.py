@@ -1,6 +1,5 @@
 import subprocess as sp
-from typing import List
-from collections.abc import Collection
+from typing import List, Collection
 
 import iris
 import numpy as np
