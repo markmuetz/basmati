@@ -20,7 +20,8 @@ Install all the dependencies into a new conda environment. Activate the environm
 
 .. code-block:: bash
 
-    conda env create -f envs/basmati_env.yml
+    conda env create -f envs/basmati_env_3.8.yml
+    # If this doesn't work, try basmati_env_minimal_3.8.yml
     conda activate basmati_env
     pip install -e .
 

@@ -5,8 +5,10 @@ sudo: false
 
 matrix:
   include:
-    - env: ENV_FILE="envs/basmati_env.yml"
-    - env: ENV_FILE="envs/basmati_env_minimal.yml"
+    - env: ENV_FILE="envs/basmati_env_3.7.yml"
+    - env: ENV_FILE="envs/basmati_env_minimal_3.7.yml"
+    - env: ENV_FILE="envs/basmati_env_3.8.yml"
+    - env: ENV_FILE="envs/basmati_env_minimal_3.8.yml"
 
 install:
   # From: https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/use-conda-with-travis-ci.html#the-travis-yml-file

@@ -48,7 +48,12 @@ def load_hydrobasins_geodataframe(hydrosheds_dir: Union[str, Path], region: str,
     # The HydroBASINS data is all in epsg:4326, which is lat/lon:
     # https://spatialreference.org/ref/epsg/4326/
     # This is the same as WGS84.
-    assert crss[0] == {'init': 'epsg:4326'}, f'Unexpected CRS: {crss[0]}'
+    # assert crss[0] == {'init': 'epsg:4326'}, f'Unexpected CRS: {crss[0]}'
+    # N.B. old method uses dict for CRS, new just uses string.
+    crs0 = crss[0]
+    if isinstance(crs0, dict):
+        crs0 = crs0['init']
+    assert crs0 == 'epsg:4326', f'Unexpected CRS: {crss[0]}'
 
     # N.B. CRS data is lost on pd.concat.
     gdf = gpd.GeoDataFrame(pd.concat(gdfs, ignore_index=True))
@@ -74,8 +79,8 @@ def load_hydrosheds_dem(hydrosheds_dir: Union[str, Path], region: str, resolutio
     with rasterio.open(Path(hydrosheds_dir, filename)) as dem_buf:
         # N.B. in different order to rasterio tx!
         gdal_tx = np.array(dem_buf.get_transform())
-        affine_tx = rasterio.transform.Affine(gdal_tx[1], gdal_tx[2], gdal_tx[0], 
-                                              gdal_tx[4], gdal_tx[5], gdal_tx[3]) 
+        affine_tx = rasterio.transform.Affine(gdal_tx[1], gdal_tx[2], gdal_tx[0],
+                                              gdal_tx[4], gdal_tx[5], gdal_tx[3])
         dem = dem_buf.read()[0]
         mask = ~dem_buf.dataset_mask()
         bounds = dem_buf.bounds
@@ -164,7 +169,7 @@ def _find_upstream(gdf: gpd.GeoDataFrame, start_basin_pfaf_id: int) -> gpd.GeoDa
         next_hops = np.zeros_like(next_hops)
         for i, row in next_gdf.iterrows():
             next_hops |= np.array(gdf_lev['NEXT_DOWN'] == row['HYBAS_ID'], dtype=bool)
-            all_hops |= next_hops 
+            all_hops |= next_hops
 
     return gdf_lev[all_hops > 0]
 
@@ -244,7 +249,7 @@ def _area_select(gdf: gpd.GeoDataFrame, min_area: float, max_area: float) -> gpd
         for irow_index in range(len(gdf_lev)):
             row_index = gdf_lev.index[irow_index]
             row = gdf_lev.iloc[irow_index]
-            
+
             if max_area > row.SUB_AREA > min_area:
                 larger_basin = gdf.find_next_level_larger(row.PFAF_ID)
                 larger_basin_index = larger_basin.index[0] if len(larger_basin) else -1

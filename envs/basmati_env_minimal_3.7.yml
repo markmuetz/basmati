@@ -1,4 +1,4 @@
-name: basmati_env_minimal
+name: basmati_env_minimal_3.7
 channels:
   - conda-forge
   - defaults
@@ -15,6 +15,7 @@ dependencies:
   - nose
   - numpy
   - pip
+  - python=3.7
   - rasterio
   - scipy
   - shapely
