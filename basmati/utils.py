@@ -1,5 +1,6 @@
 import subprocess as sp
-from typing import List, Iterable
+from typing import List
+from collections.abc import Collection
 
 import iris
 import numpy as np
@@ -23,8 +24,8 @@ def sysrun(cmd: str) -> sp.CompletedProcess:
     return sp.run(cmd, check=True, shell=True, stdout=sp.PIPE, stderr=sp.PIPE, encoding='utf8')
 
 
-def build_raster_from_geometries(geometries: Iterable[BaseGeometry],
-                                 shape: Iterable[int], tx: Affine) -> np.ndarray:
+def build_raster_from_geometries(geometries: Collection[BaseGeometry],
+                                 shape: Collection[int], tx: Affine) -> np.ndarray:
     """Build a 2D raster from the geometries (e.g. `gdf.geometry`)
 
     Each geometry is assigned an index, which increments by one for each geometry.
@@ -46,11 +47,11 @@ def build_raster_from_geometries(geometries: Iterable[BaseGeometry],
     return raster
 
 
-def build_raster_from_lon_lat(geometries: Iterable[BaseGeometry],
+def build_raster_from_lon_lat(geometries: Collection[BaseGeometry],
                               lon_min: float, lon_max: float, lat_min: float, lat_max: float,
                               nlon: int, nlat: int) -> np.ndarray:
     """Build raster from lon/lat box with number in each direction specified
-    
+
     Each geometry is assigned an index, which increments by one for each geometry.
     In the returned raster, the cells corresponding to each geometry will be filled in with the appropriate index value.
 
@@ -74,7 +75,7 @@ def build_raster_from_lon_lat(geometries: Iterable[BaseGeometry],
     return raster
 
 
-def build_raster_from_cube(geometries: Iterable[BaseGeometry], cube: iris.cube.Cube) -> np.ndarray:
+def build_raster_from_cube(geometries: Collection[BaseGeometry], cube: iris.cube.Cube) -> np.ndarray:
     """Build raster from cube
 
     Each geometry is assigned an index, which increments by one for each geometry.
@@ -88,7 +89,7 @@ def build_raster_from_cube(geometries: Iterable[BaseGeometry], cube: iris.cube.C
     return build_raster_from_lon_lat(geometries, lon_min, lon_max, lat_min, lat_max, nlon, nlat)
 
 
-def build_raster_cube_from_cube(geometries: Iterable[BaseGeometry], cube: iris.cube.Cube, name: str) -> iris.cube.Cube:
+def build_raster_cube_from_cube(geometries: Collection[BaseGeometry], cube: iris.cube.Cube, name: str) -> iris.cube.Cube:
     """Build raster from cube
 
     Each geometry is assigned an index, which increments by one for each geometry.
@@ -109,7 +110,7 @@ def build_raster_cube_from_cube(geometries: Iterable[BaseGeometry], cube: iris.c
     return raster_cube
 
 
-def build_weights_from_lon_lat(geometries: Iterable[BaseGeometry],
+def build_weights_from_lon_lat(geometries: Collection[BaseGeometry],
                                lon_min: float, lon_max: float, lat_min: float, lat_max: float,
                                nlon: int, nlat: int,
                                oversample_factor: int = 10) -> np.ndarray:
@@ -139,7 +140,7 @@ def build_weights_from_lon_lat(geometries: Iterable[BaseGeometry],
     return weights
 
 
-def build_weights_cube_from_cube(geometries: Iterable[BaseGeometry], cube: iris.cube.Cube, name: str,
+def build_weights_cube_from_cube(geometries: Collection[BaseGeometry], cube: iris.cube.Cube, name: str,
                                  oversample_factor: int = 10) -> iris.cube.Cube:
     """Build weights cube from target cube and using the given oversample_factor
 
