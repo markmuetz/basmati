@@ -19,7 +19,7 @@ def read(fname):
 setup(
     name='basmati',
     version=get_version(),
-    description='BAsin-Scale Model Assessment Tool',
+    description='BAsin-Scale Model Assessment ToolkIt',
     long_description=read('README.md'),
     author='Mark Muetzelfeldt',
     author_email='mark.muetzelfeldt@reading.ac.uk',
@@ -45,7 +45,7 @@ setup(
         'geopandas',
         'rasterio',
         'matplotlib',
-        'configparser', 
+        'configparser',
         'shapely',
         ],
     extras_require={
