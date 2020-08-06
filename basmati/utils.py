@@ -129,7 +129,8 @@ def build_weights_from_lon_lat(geometries: Collection[BaseGeometry],
     :param oversample_factor: amount of additional cells to use in each direction when oversampling
     :return: 3D weights where each element of first index is weights for an individual geometry.
     """
-    raster_highres = build_raster_from_lon_lat(geometries, lon_min, lon_max, lat_min, lat_max, nlon * oversample_factor,
+    raster_highres = build_raster_from_lon_lat(geometries, lon_min, lon_max, lat_min, lat_max,
+                                               nlon * oversample_factor,
                                                nlat * oversample_factor)
     raster_highres_reshaped = raster_highres.reshape(nlat, oversample_factor, nlon, oversample_factor)
     weights = np.zeros((len(geometries), nlat, nlon))
@@ -153,18 +154,39 @@ def build_weights_cube_from_cube(geometries: Collection[BaseGeometry], cube: iri
     :param oversample_factor: amount of additional cells to use in each direction when oversampling
     :return: 3D weights where each element of first index is weights for an individual geometry.
     """
+    # Check that cube has lat/lon coords and that they are final two coords.
+    try:
+        longitude = cube.coord('longitude')
+        latitude = cube.coord('latitude')
+    except iris.exceptions.CoordinateNotFoundError:
+        print(f'{cube} must have latitude and longitude coordinates')
+        raise
+
+    index_lon = cube.coords().index(longitude)
+    index_lat = cube.coords().index(latitude)
+    if not ((index_lon == cube.ndim - 1 or index_lat == cube.ndim -1) and
+            (abs(index_lon - index_lat) == 1)):
+        raise Exception('longitude and latitude must be adjecent and last two coords')
+
     lat_max, lat_min, lon_max, lon_min, nlat, nlon = get_latlon_from_cube(cube)
 
     weights = build_weights_from_lon_lat(geometries, lon_min, lon_max, lat_min, lat_max, nlon, nlat, oversample_factor)
 
     basin_index_coord = iris.coords.DimCoord(np.arange(len(geometries)), long_name='basin_index')
-    longitude = cube.coord('longitude')
-    latitude = cube.coord('latitude')
+
+    # Adjust so that they match the dims of weights.
+    # I.e. cube.ndim == 2, index_lon == 0, index_lat == 1
+    # => index_lon = 1, index_lat = 2
+    index_lon = index_lon - cube.ndim + 3
+    index_lat = index_lat - cube.ndim + 3
+    # Originally assumed order was lat then lon -- if it is not, need to swap weights dims.
+    if index_lat - index_lon == 1:
+        weights = weights.swapaxes(1, 2)
 
     weights_cube = iris.cube.Cube(weights, long_name=f'{name}', units='-',
                                   dim_coords_and_dims=[(basin_index_coord, 0),
-                                                       (latitude, 1),
-                                                       (longitude, 2)])
+                                                       (latitude, index_lat),
+                                                       (longitude, index_lon)])
 
     return weights_cube
 
@@ -175,13 +197,13 @@ def get_latlon_from_cube(cube):
     :param cube: target cube
     :return: tuple(lat_max, lat_min, lon_max, lon_min, nlat, nlon)
     """
-    nlat = cube.shape[-2]
-    nlon = cube.shape[-1]
     for latlon in ['latitude', 'longitude']:
         if not cube.coord(latlon).has_bounds():
             cube.coord(latlon).guess_bounds()
     longitude = cube.coord('longitude')
     latitude = cube.coord('latitude')
+    nlon = len(longitude.points)
+    nlat = len(latitude.points)
     lon_min, lon_max = longitude.bounds[0, 0], longitude.bounds[-1, 1]
     lat_min, lat_max = latitude.bounds[0, 0], latitude.bounds[-1, 1]
     return lat_max, lat_min, lon_max, lon_min, nlat, nlon
