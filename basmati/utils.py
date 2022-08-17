@@ -2,6 +2,7 @@ import subprocess as sp
 from typing import List, Collection
 
 import iris
+import iris.cube
 import numpy as np
 import rasterio
 from rasterio.features import rasterize
